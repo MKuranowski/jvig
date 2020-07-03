@@ -1,0 +1,6 @@
+build
+dist
+node_modules
+icon/bus.svg
+icon/crane.svg
+*.zip

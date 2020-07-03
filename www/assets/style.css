@@ -1,0 +1,113 @@
+/*
+jvig - GTFS Viewer application written using Typescript & Electron
+Copyright © 2020 Mikołaj Kuranowski
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+/* Colors */
+:root {
+    --color-text: black;
+    --color-bg: white;
+    --color-shadow: rgba(0, 0, 0, 0.4);
+
+    --color-bg-error: yellow;
+    --color-bg-invalid: salmon;
+    --color-bg-unrecognized: khaki;
+    --color-bg-extended: skyblue;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-text: gainsboro;
+        --color-bg: black;
+        --color-shadow: rgba(220, 220, 220, 0.4);
+
+        --color-bg-error: darkred;
+        --color-bg-invalid: darkred;
+        --color-bg-unrecognized: darkgoldenrod;
+        --color-bg-extended: darkslateblue;
+    }
+
+    a { color: darkturquoise }
+}
+
+/* Generic Document Settings */
+
+body {
+    max-width: 80rem;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    font-family: sans-serif;
+    background: var(--color-bg);
+    color: var(--color-text);
+}
+
+/* Tables */
+
+table {
+    border-collapse: collapse;
+    word-break: break-word;
+}
+
+table, th, td {
+    border: 1px solid var(--color-text);
+}
+
+th {
+    position: sticky;
+    top: 0;
+    background: var(--color-bg);
+    box-shadow: 0 2px 2px -1px var(--color-shadow);
+}
+
+/* Header */
+
+.header {
+    text-align: center;
+}
+
+/* Map */
+.map {
+    margin: auto;
+    height: 40rem;
+    max-width: 80rem;
+}
+
+/* Color modifiers */
+.value-invalid {
+    background-color: var(--color-bg-invalid);
+}
+
+.value-unrecognized {
+    background-color: var(--color-bg-unrecognized);
+}
+
+.value-extended {
+    background-color: var(--color-bg-extended);
+}
+
+.value-error {
+    background-color: var(--color-bg-error);
+}
+
+/* A style used when a color blob is displayed around route_short_name */
+.short-name-with-blob {
+    padding: 5px 0;
+}
+
+.align-center {
+    text-align: center;
+}
