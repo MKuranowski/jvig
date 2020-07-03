@@ -1,0 +1,24 @@
+matrix:
+  include:
+    - os: linux
+      language: node_js
+      node_js: "14"
+      env:
+        - RELEASE_FILE=dist/jvig-*.AppImage
+
+cache:
+  directories:
+    - node_modules
+    - $HOME/.cache/electron
+    - $HOME/.cache/electron-builder
+
+# Block normal script execution, as jvig doesn't have any tests
+if: 0 = 1
+
+deploy:
+  provider: releases
+  file: $RELEASE_FILE
+  api_key: $GITHUB_PUBLISH_RELEASE
+  skip_cleanup: true
+  on:
+    tags: true
