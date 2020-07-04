@@ -14,7 +14,9 @@ if: tag =~ /^v/
 
 deploy:
   provider: releases
+  script: npm run dist
   file: $RELEASE_FILE
+  file_glob: true
   api_key: $GITHUB_PUBLISH_RELEASE
   skip_cleanup: true
   on:
