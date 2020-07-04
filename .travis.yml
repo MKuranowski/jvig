@@ -12,9 +12,6 @@ cache:
     - $HOME/.cache/electron
     - $HOME/.cache/electron-builder
 
-# Block normal script execution, as jvig doesn't have any tests
-if: 0 = 1
-
 deploy:
   provider: releases
   file: $RELEASE_FILE
