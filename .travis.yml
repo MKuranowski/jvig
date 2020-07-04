@@ -1,16 +1,16 @@
-matrix:
-  include:
-    - os: linux
-      language: node_js
-      node_js: "14"
-      env:
-        - RELEASE_FILE=dist/jvig-*.AppImage
+os: linux
+language: node_js
+node_js: "14"
+env:
+  - RELEASE_FILE=dist/jvig-*.AppImage
 
 cache:
   directories:
     - node_modules
     - $HOME/.cache/electron
     - $HOME/.cache/electron-builder
+
+if: tag =~ /^v/
 
 deploy:
   provider: releases
