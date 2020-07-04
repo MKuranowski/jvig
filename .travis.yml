@@ -12,9 +12,10 @@ cache:
 
 if: tag =~ /^v/
 
+before_deploy: npm run dist
+
 deploy:
   provider: releases
-  script: bash -c "npm run dist"
   file: $RELEASE_FILE
   file_glob: true
   api_key: $GITHUB_PUBLISH_RELEASE
