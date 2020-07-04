@@ -21,13 +21,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   <head>
     <meta charset="UTF-8">
     <title>jvig</title>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'sha256-p/5zqqY/2O84ONSMDrAESARASm2AqCiVgQJ79k308Kw='"
+    >
 
     <!-- Local CSS -->
     <link rel="stylesheet" href="assets/style.css" />
+
+    <!-- Local Script -->
+    <script>var { init } = require("../build/renderer/loading.js");</script>
+    <script src="assets/autoinit.js"></script>
   </head>
   <body>
-    <h3>Data is being loaded. This can take a moment, escpecially for big GTFS feeds.</h3>
-    <p>Take a look at STDOUT for some info about the loading process.</p>
+    <div id="content"></div>
   </body>
 </html>

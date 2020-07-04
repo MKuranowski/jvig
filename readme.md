@@ -49,7 +49,7 @@ Features/Todos
 | search                | ❌ |
 | improve snappiness    | ❌ |
 | verify dark mode      | ❌ |
-| better loading screen | ❌ |
+| better loading screen | ✔️  |
 | Windows release       | ❌ |
 | macOS release         | ❌ (don't have a mac to test things) |
 | auto-HTML generator   | ❌ |

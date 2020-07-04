@@ -16,12 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { app, Menu, BrowserWindow, ipcMain } from "electron"
+import { app, BrowserWindow, ipcMain } from "electron"
 import type { IpcMainInvokeEvent } from "electron"
 import { join } from "path"
 
 import { handleInput } from "./gtfs"
-import { InvalidInputFile } from "./errs"
 import type * as Gtfs from "./gtfsTypes"
 
 // Crash on unhandled promise rejeections
@@ -41,21 +40,14 @@ async function createWindow () {
         }
     })
 
-    Menu.setApplicationMenu(null)
-
     mainWindow.loadFile(join(__dirname, "..", "www", "loading.html"))
-    console.log(process.argv)
     if (process.argv.includes("devTools")) { mainWindow.webContents.openDevTools() }
 }
 
 async function createGtfs () {
     const inFile = app.isPackaged ? process.argv[1] : process.argv[2]
 
-    if (inFile === undefined) {
-        throw new InvalidInputFile("Path to a GTFS file/folder is expected in program arguments!")
-    }
-
-    mainGtfsObj = await handleInput(inFile)
+    mainGtfsObj = await handleInput(inFile, mainWindow)
 }
 
 // This method will be called when Electron has finished
@@ -94,6 +86,16 @@ app.on("window-all-closed", function () {
  *
  * "find", args: [table, primaryValue]
  *     returns: null | Gtfs.PossibleValues
+ *
+ * "loading-status"
+ *     ! main → renderer !
+ *     ! only when a GTFS is loaded !
+ *     returns: status object
+ *
+ * "loading-status-req"
+ *     ! only when a GTFS is loaded
+ *     returns: --
+ *     side-effect: force a loading-status message
  *
  */
 

@@ -28,8 +28,21 @@ import * as csvParse from "csv-parse"
 import { InvalidInputFile, UnableToExtract, NoPrimaryColumn } from "./errs"
 import type * as Gtfs from "./gtfsTypes"
 
+import { ipcMain } from "electron"
+import type { BrowserWindow } from "electron"
+
 // Workaround for https://github.com/DefinitelyTyped/DefinitelyTyped/issues/20497
 type PYauzlOpen = (arg1: string, arg2?: yauzl.Options) => Promise<yauzl.ZipFile>
+
+type LoadingStatusStates = "nofile" | "error" | "loading" | "done"
+type LoadingStatusTableState = "error" | "loading" | "done"
+
+export interface LoadingStatus {
+    status: LoadingStatusStates,
+    fileName: string | null,
+    tables?: Map<string, LoadingStatusTableState>,
+    error?: Error
+}
 
 // Function creating Gtfs.File* from readable streams
 async function processToRow (readStream: NodeJS.ReadableStream, tableName: string, primaryKey: string): Promise<Gtfs.FileToRow> {
@@ -117,10 +130,10 @@ async function postProcessStops (stopMap: Gtfs.FileToRow | undefined): Promise<G
 }
 
 // Instructions how to handle GTFS file
-// file_name → tableName, processingFunction, primaryKey
 type Processor<T> = (readStream: NodeJS.ReadableStream, tableName: string, primaryKey: string) => Promise<T>
 type FileHandlerDef<T extends keyof Gtfs.Obj> = [T, Processor<Gtfs.Obj[T]>, string]
 
+// file_name → tableName, processingFunction, primaryKey
 const fileHandlers: Map<string, FileHandlerDef<keyof Gtfs.Obj>> = new Map([
     ["agency.txt", ["agency", processToRow, "agency_id"]],
     ["stops.txt", ["stops", processToRow, "stop_id"]],
@@ -133,20 +146,65 @@ const fileHandlers: Map<string, FileHandlerDef<keyof Gtfs.Obj>> = new Map([
     ["shapes.txt", ["shapes", processShapes, "shape_id"]]
 ])
 
+// Current state of loading the GTFS
+class StatusUpdater {
+    window: BrowserWindow
+    status: LoadingStatus
+
+    constructor (mainWindow: BrowserWindow) {
+        this.window = mainWindow
+        this.status = {
+            status: "loading",
+            fileName: null
+        }
+    }
+
+    async send () {
+        this.window.webContents.send("loading-status", this.status)
+    }
+
+    setNoFile () {
+        this.status.status = "nofile"
+    }
+
+    setError (e: Error) {
+        this.status.status = "error"
+        delete this.status.tables
+        this.status.error = e
+
+        this.send()
+    }
+
+    setTableState (table: string, newStatus: LoadingStatusTableState) {
+        if (this.status.tables === undefined) { this.status.tables = new Map() }
+        this.status.tables.set(table, newStatus)
+
+        this.send()
+    }
+
+    setDone () {
+        this.status.status = "done"
+        delete this.status.tables
+        this.send()
+    }
+}
+
+var statusUpdater: StatusUpdater
+
 // Function that process specific input types
 async function handleDirectory (directoryPath: string): Promise<Gtfs.Obj> {
     const entryPromises: Promise<void>[] = []
     const gtfsobj: Gtfs.Obj = {}
 
-    console.info("Attempting to load GTFS from a directory")
-
     const handleEntry = async (filename: string) => {
+        // Get information what to do with this entry
         const thisFileHandlers = fileHandlers.get(filename)
 
         if (thisFileHandlers === undefined) { return }
         const [table, processor, primaryKey] = thisFileHandlers
 
-        console.info(`Starting to load table: ${table}`)
+        // Mark this table as loaded
+        statusUpdater.setTableState(table, "loading")
 
         const reader = fs.createReadStream(join(directoryPath, filename))
 
@@ -154,13 +212,14 @@ async function handleDirectory (directoryPath: string): Promise<Gtfs.Obj> {
         gtfsobj[table] = await processor(reader, table, primaryKey)
         if (table === "stops") { gtfsobj._stopChildren = await postProcessStops(gtfsobj.stops) }
 
-        console.info(`Finishied loading table: ${table}`)
+        // Mark this table as loaded
+        statusUpdater.setTableState(table, "done")
     }
 
     fs.readdirSync(directoryPath).forEach(async filename => entryPromises.push(handleEntry(filename)))
 
     await Promise.all(entryPromises)
-    console.info("Loading finished")
+    statusUpdater.setDone()
 
     return gtfsobj
 }
@@ -169,8 +228,6 @@ async function handleZip (zipPath: string): Promise<Gtfs.Obj> {
     const entryPromises: Promise<void>[] = []
     const gtfsobj: Gtfs.Obj = {}
     let zip: yauzl.ZipFile
-
-    console.info("Attempting to load a ZIP file")
 
     try {
         zip = await (promisify(yauzl.open) as PYauzlOpen)(zipPath, { autoClose: true })
@@ -189,7 +246,7 @@ async function handleZip (zipPath: string): Promise<Gtfs.Obj> {
         const [table, processor, primaryKey] = thisFileHandler
         const reader = await openReadStream(entry)
 
-        console.info(`Starting to load table: ${table}`)
+        statusUpdater.setTableState(table, "loading")
 
         // Check if the input stream was succesfully created
         if (reader === undefined) {
@@ -202,7 +259,7 @@ async function handleZip (zipPath: string): Promise<Gtfs.Obj> {
         gtfsobj[table] = await processor(reader, table, primaryKey)
         if (table === "stops") { gtfsobj._stopChildren = await postProcessStops(gtfsobj.stops) }
 
-        console.info(`Finishied loading table: ${table}`)
+        statusUpdater.setTableState(table, "done")
     }
 
     zip.on("entry", async entry => {
@@ -212,7 +269,7 @@ async function handleZip (zipPath: string): Promise<Gtfs.Obj> {
     // Wait until all actions have finished
     await pEvent(zip, "end")
     await Promise.all(entryPromises)
-    console.info("Loading finished")
+    statusUpdater.setDone()
 
     return gtfsobj
 }
@@ -225,12 +282,36 @@ async function handleZip (zipPath: string): Promise<Gtfs.Obj> {
  * If provided with path to a zip file, extracts files into the returned tempdir.
  * Else throws an error with message "Input is not GTFS"
  */
-export async function handleInput (inputPath: string): Promise<Gtfs.Obj> {
-    const inputStat = await promisify(fs.stat)(inputPath)
+export async function handleInput (inputPath: string | undefined, mainWin: BrowserWindow): Promise<Gtfs.Obj> {
+    statusUpdater = new StatusUpdater(mainWin)
 
-    if (inputStat.isDirectory()) {
-        return await handleDirectory(inputPath)
-    } else {
-        return await handleZip(inputPath)
+    ipcMain.handle("loading-status-req", event => statusUpdater.send())
+
+    if (inputPath === undefined) {
+        statusUpdater.setNoFile()
+        throw new InvalidInputFile("No input file provided!")
+    } else if (!fs.existsSync(inputPath)) {
+        statusUpdater.status.fileName = inputPath
+        statusUpdater.setNoFile()
+        throw new InvalidInputFile("Input file does not exist!")
     }
+
+    statusUpdater.status.fileName = inputPath
+    let gtfsObj: Gtfs.Obj
+
+    try {
+        const inputStat = await promisify(fs.stat)(inputPath)
+
+        if (inputStat.isDirectory()) {
+            gtfsObj = await handleDirectory(inputPath)
+        } else {
+            gtfsObj = await handleZip(inputPath)
+        }
+    } catch (e) {
+        statusUpdater.setError(e)
+        throw e
+    }
+
+    ipcMain.removeHandler("loading-status-req")
+    return gtfsObj
 }
