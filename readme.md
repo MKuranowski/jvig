@@ -1,4 +1,4 @@
-⚠️ It's a test projesct for me to learn Electron and Typescript. Shitty code ahead!
+⚠️ It's a test project for me to learn Electron and Typescript. Shitty code ahead!
 
 <img src="icon/jvig.svg" alt="logo" width="128" />  
 
