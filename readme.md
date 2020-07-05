@@ -23,7 +23,7 @@ Usage
 jvig can open both folders and ZIP archives.
 
 You can add the executable to Open With menu of your operating system.  
-~~Dragging a file/folder to the icon on Windows should also work.~~ (no Windows version yet)
+Dragging a file/folder to the icon on Windows should also work.
 
 
 
@@ -49,8 +49,9 @@ Features/Todos
 | search                | ❌ |
 | improve snappiness    | ❌ |
 | verify dark mode      | ❌ |
-| better loading screen | ✔️  |
-| Windows release       | ❌ |
+| add file-picker if no file was provided | ❌ |
+| better loading screen | ✔️ (0.1.5) |
+| Windows release       | ✔️ (0.1.5) |
 | macOS release         | ❌ (don't have a mac to test things) |
 | auto-HTML generator   | ❌ |
 
