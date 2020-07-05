@@ -36,7 +36,8 @@
         "nsis": {
             "license": "license.md",
             "deleteAppDataOnUninstall": true,
-            "runAfterFinish": false
+            "runAfterFinish": false,
+            "artifactName": "${productName}-${version}-setup.${ext}"
         }
     },
     "devDependencies": {

@@ -1,8 +1,19 @@
-os: linux
-language: node_js
-node_js: "14"
-env:
-  - RELEASE_FILE=dist/jvig-*.AppImage
+jobs:
+  include:
+  # - os: linux
+  #   language: node_js
+  #   node_js: "14"
+  #   env:
+  #     - RELEASE_FILE=dist/jvig-*.AppImage
+
+  - os: windows
+    language: node_js
+    node_js: "14"
+    env:
+      - RELEASE_FILE=dist/jvig-*-setup.exe
+      - HOME=$LOCALAPPDATA
+      - ELECTRON_CACHE=$HOME/.cache/electron
+      - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
 
 cache:
   directories:
@@ -12,7 +23,12 @@ cache:
 
 if: tag =~ /^v/
 
-before_deploy: npm run dist
+before_deploy: |
+  if [ "$TRAVIS_OS_NAME" == "windows" ]; then
+    npm run dist:win32
+  else
+    npm run dist
+  fi
 
 deploy:
   provider: releases
