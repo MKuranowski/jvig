@@ -70,7 +70,7 @@ async function onNewStatus (eveent: IpcRendererEvent, newStatus: LoadingStatus):
         // No table exist
         if (table === null) {
             const h3 = document.createElement("h3")
-            h3.append(`Loading file '${newStatus.fileName}`)
+            h3.append(`Loading file '${newStatus.fileName}'`)
 
             table = document.createElement("table")
             table.id = "loading-status"
