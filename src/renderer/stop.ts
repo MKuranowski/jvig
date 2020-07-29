@@ -123,13 +123,14 @@ async function handleStops (stopId: string, map: L.Map, div: HTMLDivElement): Pr
         row = document.createElement("tr")
         table.append(row)
         row.append(
-            ...(["", ...Object.keys(stopData)].map(prepareStopHeader))
+            ...(["", "", ...Object.keys(stopData)].map(prepareStopHeader))
         )
 
         row = document.createElement("tr")
         table.append(row)
         row.append(
-            ...([["", "0"], ...Object.entries(stopData)].map(([k, v]) => prepareStopCell(k, v)))
+            ...([["", "0"], ["", ""], ...Object.entries(stopData)]
+                .map(([k, v]) => prepareStopCell(k, v)))
         )
 
         // Add main stop to map
@@ -177,7 +178,7 @@ async function handleStops (stopId: string, map: L.Map, div: HTMLDivElement): Pr
                 if (otherStopData === null) { continue }
                 const otherRow = document.createElement("tr")
                 otherRow.append(
-                    ...[["", idx.toString()], ...Object.entries(otherStopData)]
+                    ...[["", idx.toString()], ["_link_departures", otherStopId], ...Object.entries(otherStopData)]
                         .map(([k, v]) => prepareStopCell(k, v))
                 )
                 table.append(otherRow)
