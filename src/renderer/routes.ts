@@ -102,11 +102,16 @@ function prepareValueCell (key: string, value: string, row: any): HTMLElement {
                 elem = value
             } else {
                 // Create a nice box with route color around route_short_name
+                let style = `background-color: ${color}; color: ${textColor}; ` +
+                    "border-radius: 4px; padding: 2px; margin: 2px;"
+
+                if (value === "") {
+                    style += " display: block; width: 14px; height: 14px;"
+                }
+
                 cellElem.className = "short-name-with-blob"
                 elem = document.createElement("span")
-                elem.setAttribute("style",
-                    `background-color: ${color}; color: ${textColor}; ` +
-                    "border-radius: 4px; padding: 2px; margin: 2px;")
+                elem.setAttribute("style", style)
                 elem.append(value)
             }
         } else {
