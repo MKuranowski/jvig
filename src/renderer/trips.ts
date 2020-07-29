@@ -51,7 +51,7 @@ export function prepareValueCell (key: string, value: string, row: any): HTMLEle
         break
     case "route_id":
         elem = document.createElement("a")
-        elem.href = `/trips.html?route=${encodeURIComponent(value)}`
+        elem.href = `trips.html?route=${encodeURIComponent(value)}`
         elem.append(value)
         break
     case "direction_id":
@@ -63,7 +63,7 @@ export function prepareValueCell (key: string, value: string, row: any): HTMLEle
         break
     case "block_id":
         elem = document.createElement("a")
-        elem.href = `/trips.html?block=${encodeURIComponent(value)}`
+        elem.href = `trips.html?block=${encodeURIComponent(value)}`
         elem.append(value)
         break
     case "wheelchair_accessible":

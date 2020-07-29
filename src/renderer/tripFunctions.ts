@@ -153,7 +153,7 @@ export function prepareFreqCell (key: string, value: string): HTMLTableDataCellE
     switch (key) {
     case "trip_id":
         elem = document.createElement("a")
-        elem.href = `/trip.html?id=${encodeURIComponent(value)}`
+        elem.href = `trip.html?id=${encodeURIComponent(value)}`
         elem.append(value)
         break
     case "start_time":
