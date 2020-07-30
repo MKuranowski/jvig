@@ -16,11 +16,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { app, BrowserWindow, ipcMain } from "electron"
+import { app, BrowserWindow, Menu, ipcMain } from "electron"
 import type { IpcMainInvokeEvent } from "electron"
 import { join } from "path"
 
 import { handleInput } from "./gtfs"
+import { menuTempl } from "./appmenu"
 import type * as Gtfs from "./gtfsTypes"
 
 // Crash on unhandled promise rejeections
@@ -54,6 +55,9 @@ async function createGtfs () {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
+    // @ts-ignore
+    Menu.setApplicationMenu(Menu.buildFromTemplate(menuTempl))
+
     await Promise.all([createWindow(), createGtfs()])
 
     mainWindow.loadFile(join(__dirname, "..", "www", "agency.html"))
