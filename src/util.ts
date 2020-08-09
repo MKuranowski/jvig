@@ -82,3 +82,18 @@ export function validTime (timeS: string): boolean {
     if (m >= 60 || s >= 60) { return false }
     return true
 }
+
+/**
+ * Checks if given route_color/route_text_color is valid and safe to use
+ * Returns "#xxxxxx" or null (if the color was invalid)
+ * @param value route_color/route_text_color value
+ */
+export function safeColor (value: string | undefined): string | null {
+    if (value === undefined) {
+        return null
+    } else if (/^[0-9A-Fa-f]{6}$/.test(value)) {
+        return "#" + value.toUpperCase()
+    } else {
+        return null
+    }
+}

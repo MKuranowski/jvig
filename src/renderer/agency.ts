@@ -17,41 +17,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { ipcRenderer } from "electron"
-import { NoContentInHtml } from "../errs"
-import { validAgencyFields } from "../validFields"
-
 import type { IpcRendererEvent } from "electron"
+
+import { NoContentInHtml } from "../errs"
+import { prepareAgencyHeader, prepareAgencyValue } from "../tables/agency"
 import type * as Gtfs from "../gtfsTypes"
-
-// A handler for createing cell elements of the CSV header
-function prepareHeaderCell (key: string): HTMLElement {
-    const el = document.createElement("th")
-    el.append(key)
-
-    // Set a khaki background for unrecognized field names
-    if (key !== "" && !validAgencyFields.has(key)) { el.className = "value-unrecognized" }
-
-    return el
-}
-
-// A handler for creating
-function prepareValueCell (key: string, value: string): HTMLElement {
-    const cellElem = document.createElement("td")
-    let elem: string | HTMLAnchorElement
-
-    switch (key) {
-    case "_link_routes":
-        elem = document.createElement("a")
-        elem.href = `routes.html?agency=${encodeURIComponent(value)}`
-        elem.append("Agency routes →")
-        break
-    default:
-        elem = value
-    }
-
-    cellElem.append(elem)
-    return cellElem
-}
 
 export async function init (): Promise<void> {
     const content = document.getElementById("content")
@@ -79,7 +49,7 @@ export async function init (): Promise<void> {
     content.append(table)
 
     // Add a handler when data arrives
-    ipcRenderer.on("dump-stream", async (event: IpcRendererEvent, row: Gtfs.Row) => {
+    ipcRenderer.on("dump-stream-agency", async (event: IpcRendererEvent, row: Gtfs.Row) => {
         if (!wroteHeader) {
             // Write header, if it wasn't written
             const headerTr = document.createElement("tr")
@@ -87,7 +57,7 @@ export async function init (): Promise<void> {
 
             wroteHeader = true
             const headerElems = ["", ...Object.keys(row)]
-                .map(key => prepareHeaderCell(key))
+                .map(key => prepareAgencyHeader(key))
             headerTr.append(...headerElems)
         }
 
@@ -96,7 +66,7 @@ export async function init (): Promise<void> {
         table.append(tr)
 
         const elems = [["_link_routes", row.agency_id], ...Object.entries(row)]
-            .map(([key, value]) => prepareValueCell(key, value))
+            .map(([key, value]) => prepareAgencyValue(key, value))
 
         // Add all cells to row
         tr.append(...elems)
@@ -104,4 +74,9 @@ export async function init (): Promise<void> {
 
     // Request the data dump
     await ipcRenderer.invoke("dump-request", "agency")
+
+    // Wait a bit after dump-request finishes (had some issues without a timeout)
+    // And remove listener from dump-stream channel
+    await new Promise(resolve => setTimeout(resolve, 50))
+    ipcRenderer.removeAllListeners("dump-stream-agency")
 }

@@ -17,12 +17,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { ipcRenderer } from "electron"
-import { NoContentInHtml } from "../errs"
 
-import {
-    prepareHeaderCell as prepareTripHeader,
-    prepareValueCell as prepareTripCell
-} from "./trips"
+import { NoContentInHtml } from "../errs"
+import { prepareTripsHeader, prepareTripsValue } from "../tables/trips"
+import { prepareTimesHeader, prepareTimesValue } from "../tables/stopTimes"
+import { prepareFreqHeader, prepareFreqValue } from "../tables/frequencies"
 
 import * as Gtfs from "../gtfsTypes"
 
@@ -65,13 +64,13 @@ async function makeTripDiv (tripId: string, tripData: null | Gtfs.Row): Promise<
         row = document.createElement("tr")
         table.append(row)
         row.append(
-            ...(f.rowKeysWithStopName(tripData).map(prepareTripHeader))
+            ...(f.rowKeysWithStopName(tripData).map(prepareTripsHeader))
         )
 
         row = document.createElement("tr")
         table.append(row)
         row.append(
-            ...(f.rowEntriesWithStopName(tripData).map(([k, v]) => prepareTripCell(k, v, tripData)))
+            ...(f.rowEntriesWithStopName(tripData).map(([k, v]) => prepareTripsValue(k, v)))
         )
     }
 
@@ -83,9 +82,10 @@ async function makeTripDiv (tripId: string, tripData: null | Gtfs.Row): Promise<
  * @param tripId
  * @param findStopData
  */
-async function makeTimesDiv (tripId: string, findStopData: Map<string, string[]>): Promise<HTMLDivElement> {
+async function makeTimesDiv (tripId: string, findStopData: Map<string, string[]>):
+Promise<HTMLDivElement> {
     const div = document.createElement("div")
-    const timesRows = await ipcRenderer.invoke("find", "stopTimes", tripId) as (null | Gtfs.Row[])
+    const timesRows = await ipcRenderer.invoke("find", "stopTimes", tripId) as null | Gtfs.Row[]
     let wroteHeader: boolean = false
 
     div.append(document.createElement("hr"))
@@ -116,7 +116,7 @@ async function makeTimesDiv (tripId: string, findStopData: Map<string, string[]>
                 table.append(headerTr)
 
                 wroteHeader = true
-                headerTr.append(...(f.rowKeysWithStopName(row).map(f.prepareTimesHeader)))
+                headerTr.append(...(f.rowKeysWithStopName(row).map(prepareTimesHeader)))
             }
 
             // Write the normal row
@@ -124,7 +124,7 @@ async function makeTimesDiv (tripId: string, findStopData: Map<string, string[]>
             table.append(tr)
             tr.append(
                 ...(f.rowEntriesWithStopName(row)
-                    .map(([k, v]) => f.prepareTimesCell(k, v, row, findStopData))
+                    .map(([k, v]) => prepareTimesValue(k, v, row, findStopData))
                 )
             )
         })
@@ -139,7 +139,7 @@ async function makeTimesDiv (tripId: string, findStopData: Map<string, string[]>
  */
 async function makeFreqDiv (tripId: string): Promise<null | HTMLDivElement> {
     // Get data from frequencies, and return null if this is not a frequency-based trip
-    const timesRows = await ipcRenderer.invoke("find", "frequencies", tripId) as (null | Gtfs.Row[])
+    const timesRows = await ipcRenderer.invoke("find", "frequencies", tripId) as null | Gtfs.Row[]
     if (timesRows === null) { return null }
 
     // Create HTML elements
@@ -164,7 +164,7 @@ async function makeFreqDiv (tripId: string): Promise<null | HTMLDivElement> {
             wroteHeader = true
             headerTr.append(
                 ...(Object.keys(row)
-                    .map(k => f.prepareFreqHeader(k)))
+                    .map(k => prepareFreqHeader(k)))
             )
         }
 
@@ -173,7 +173,7 @@ async function makeFreqDiv (tripId: string): Promise<null | HTMLDivElement> {
         table.append(tr)
         tr.append(
             ...(Object.entries(row)
-                .map(([k, v]) => f.prepareFreqCell(k, v)))
+                .map(([k, v]) => prepareFreqValue(k, v)))
         )
     })
 
@@ -190,7 +190,7 @@ export async function init () {
     }
 
     const tripId = (new URLSearchParams(window.location.search)).get("id")
-    const tripData = await ipcRenderer.invoke("find", "trips", tripId) as (null | Gtfs.Row)
+    const tripData = await ipcRenderer.invoke("find", "trips", tripId) as null | Gtfs.Row
 
     if (tripId === null) {
         const h3 = document.createElement("h3")
@@ -203,8 +203,10 @@ export async function init () {
 
     // Create div elements and the map
     const result = await Promise.all([
-        makeTripDiv(tripId, tripData), makeTimesDiv(tripId, stopDataMap),
-        makeFreqDiv(tripId), f.createMap()
+        makeTripDiv(tripId, tripData),
+        makeTimesDiv(tripId, stopDataMap),
+        makeFreqDiv(tripId),
+        f.createMap()
     ])
 
     const [divTrip, divTimes, divFreq] = [result[0], result[1], result[2]]

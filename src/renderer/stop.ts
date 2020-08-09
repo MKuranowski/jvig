@@ -21,15 +21,11 @@ import type { IpcRendererEvent } from "electron"
 
 import { NoContentInHtml } from "../errs"
 import { validLat, validLon } from "../util"
-
-import {
-    prepareHeaderCell as prepareStopHeader,
-    prepareValueCell as prepareStopCell
-} from "./stops"
-
-import { prepareTimesHeader, prepareTimesCell } from "./tripFunctions"
+import { prepareStopsHeader, prepareStopsValue } from "../tables/stops"
+import { prepareTimesHeader, prepareTimesValue } from "../tables/stopTimes"
 import * as Gtfs from "../gtfsTypes"
 
+// Leaflet
 import * as L from "leaflet"
 import "leaflet-extra-markers"
 
@@ -103,8 +99,8 @@ async function handleStops (stopId: string, map: L.Map, div: HTMLDivElement): Pr
         const h3 = document.createElement("h3")
         h3.className = "value-error"
 
-        if (await ipcRenderer.invoke("exists", "trips")) {
-            h3.append(`Error! Trip ${stopId} not found in stops.txt`)
+        if (await ipcRenderer.invoke("exists", "stops")) {
+            h3.append(`Error! Stop ${stopId} not found in stops.txt`)
         } else {
             h3.append("Error! File stops.txt not present in the GTFS")
         }
@@ -123,14 +119,14 @@ async function handleStops (stopId: string, map: L.Map, div: HTMLDivElement): Pr
         row = document.createElement("tr")
         table.append(row)
         row.append(
-            ...(["", "", ...Object.keys(stopData)].map(prepareStopHeader))
+            ...(["", "", ...Object.keys(stopData)].map(prepareStopsHeader))
         )
 
         row = document.createElement("tr")
         table.append(row)
         row.append(
             ...([["", "0"], ["", ""], ...Object.entries(stopData)]
-                .map(([k, v]) => prepareStopCell(k, v)))
+                .map(([k, v]) => prepareStopsValue(k, v)))
         )
 
         // Add main stop to map
@@ -159,7 +155,7 @@ async function handleStops (stopId: string, map: L.Map, div: HTMLDivElement): Pr
             // Create a fake row
             row = document.createElement("tr")
             const spannedCell = document.createElement("td")
-            spannedCell.colSpan = Object.keys(stopData).length + 1
+            spannedCell.colSpan = Object.keys(stopData).length + 2
             spannedCell.className = "align-center"
             spannedCell.append("Other stations belonging to this station group:")
 
@@ -179,7 +175,7 @@ async function handleStops (stopId: string, map: L.Map, div: HTMLDivElement): Pr
                 const otherRow = document.createElement("tr")
                 otherRow.append(
                     ...[["", idx.toString()], ["_link_departures", otherStopId], ...Object.entries(otherStopData)]
-                        .map(([k, v]) => prepareStopCell(k, v))
+                        .map(([k, v]) => prepareStopsValue(k, v))
                 )
                 table.append(otherRow)
 
@@ -210,7 +206,7 @@ async function handleStopTimes (stopId: string, div: HTMLDivElement): Promise<vo
     const emptyMap = new Map()
 
     // Define a handler for incoming data
-    ipcRenderer.on("dump-stream", async (event: IpcRendererEvent, rows: Gtfs.Row[]) => {
+    ipcRenderer.on("dump-stream-stopTimes", async (event: IpcRendererEvent, rows: Gtfs.Row[]) => {
         rows.filter(row => row.stop_id === stopId).forEach(row => {
             if (!wroteHeader) {
                 // Write header, if it wasn't written
@@ -227,7 +223,7 @@ async function handleStopTimes (stopId: string, div: HTMLDivElement): Promise<vo
             table.append(tr)
 
             const elems = Object.entries(row)
-                .map(([key, value]) => prepareTimesCell(key, value, row, emptyMap))
+                .map(([key, value]) => prepareTimesValue(key, value, row, emptyMap))
 
             // Add all cells to row
             tr.append(...elems)
@@ -236,6 +232,11 @@ async function handleStopTimes (stopId: string, div: HTMLDivElement): Promise<vo
 
     // Request the data dump
     await ipcRenderer.invoke("dump-request", "stopTimes")
+
+    // Wait a bit after dump-request finishes (had some issues without a timeout)
+    // And remove listener from dump-stream channel
+    await new Promise(resolve => setTimeout(resolve, 50))
+    ipcRenderer.removeAllListeners("dump-stream-stopTimes")
 }
 
 export async function init () {
@@ -264,6 +265,7 @@ export async function init () {
 
     content.append(stopDiv, timesDiv)
 
-    await handleStops(stopId, map, stopDiv)
-    await handleStopTimes(stopId, timesDiv)
+    await Promise.all([
+        handleStops(stopId, map, stopDiv), handleStopTimes(stopId, timesDiv)
+    ])
 }

@@ -22,7 +22,7 @@ import type { IpcRendererEvent } from "electron"
 import { NoContentInHtml } from "../errs"
 import type { LoadingStatus } from "../gtfs"
 
-async function onNewStatus (eveent: IpcRendererEvent, newStatus: LoadingStatus): Promise<void> {
+async function onNewStatus (event: IpcRendererEvent, newStatus: LoadingStatus): Promise<void> {
     const content = document.getElementById("content") as (HTMLDivElement | null)
 
     // Check if content exists
@@ -126,4 +126,8 @@ async function onNewStatus (eveent: IpcRendererEvent, newStatus: LoadingStatus):
 export async function init (): Promise<void> {
     ipcRenderer.on("loading-status", onNewStatus)
     await ipcRenderer.invoke("loading-status-req")
+
+    // Wait a bit before removing the listener
+    await new Promise(resolve => setTimeout(resolve, 50))
+    ipcRenderer.removeAllListeners("loading-status")
 }

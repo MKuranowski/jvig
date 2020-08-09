@@ -19,105 +19,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { ipcRenderer } from "electron"
 import type { IpcRendererEvent } from "electron"
 
-import { validDate } from "../util"
 import { NoContentInHtml } from "../errs"
-
-import { validCalendarFields, validDatesFields, extendedCalendarFields } from "../validFields"
-
+import {
+    prepareCalendarHeader,
+    prepareDatesHeader,
+    prepareCalendarValue,
+    prepareDatesValue
+} from "../tables/calendars"
 import type * as Gtfs from "../gtfsTypes"
 
-// A handler for creating cell elements of the CSV header
-function prepareHeaderCell (key: string, table: "calendar" | "calendar_dates"): HTMLElement {
-    const el = document.createElement("th")
-    el.append(key)
-
-    // Set background color
-    if (extendedCalendarFields.has(key)) {
-        el.className = "value-extended"
-    } else if (table === "calendar" && !validCalendarFields.has(key)) {
-        el.className = "value-unrecognized"
-    } else if (table === "calendar_dates" && !validDatesFields.has(key)) {
-        el.className = "value-unrecognized"
-    }
-
-    return el
-}
-
-// A handler for creating cell with value
-function prepareCalendarCell (key: string, value: string): HTMLElement {
-    const cellElem = document.createElement("td")
-    let elem: string
-
-    switch (key) {
-    case "start_date":
-    case "end_date":
-        if (!validDate(value)) { cellElem.className = "value-invalid" }
-        elem = value
-
-        break
-    case "monday":
-    case "tuesday":
-    case "wednesday":
-    case "thursday":
-    case "friday":
-    case "saturday":
-    case "sunday":
-        if (value !== "0" && value !== "1") { cellElem.className = "value-invalid" }
-        elem = value
-
-        break
-    default:
-        elem = value
-    }
-
-    cellElem.append(elem)
-    return cellElem
-}
-
-function prepareDatesCell (key: string, value: string): HTMLElement {
-    const cellElem = document.createElement("td")
-    let elem: string
-
-    switch (key) {
-    case "date":
-        if (!validDate(value)) { cellElem.className = "value-invalid" }
-        elem = value
-
-        break
-    case "exception_type":
-        if (value === "1") {
-            elem = "1 (➕)"
-        } else if (value === "2") {
-            elem = "2 (➖)"
-        } else {
-            cellElem.className = "value-invalid"
-            elem = value
-        }
-
-        break
-    default:
-        elem = value
-    }
-
-    cellElem.append(elem)
-    return cellElem
-}
-
 // Add rows from calendar.txt to window
-async function dumpCalendar (content: HTMLElement) {
-    // Create the header
-    const header = document.createElement("h5")
-    header.append("calendar.txt")
-    content.append(header)
-
-    // Create the table
-    const table = document.createElement("table")
-    content.append(table)
-
+async function dumpCalendar (table: HTMLTableElement) {
     let wroteHeader: boolean = false
 
     // Iterate over rows of calendar.txt
-    ipcRenderer.on("dump-stream", async (event: IpcRendererEvent, row: Gtfs.Row) => {
+    ipcRenderer.on("dump-stream-calendar", async (event: IpcRendererEvent, row: Gtfs.Row) => {
         // Write header, if it wasn't written
         if (!wroteHeader) {
             const headerTr = document.createElement("tr")
@@ -125,7 +41,7 @@ async function dumpCalendar (content: HTMLElement) {
 
             wroteHeader = true
             const headerElems = Object.keys(row)
-                .map(key => prepareHeaderCell(key, "calendar"))
+                .map(key => prepareCalendarHeader(key))
             headerTr.append(...headerElems)
         }
 
@@ -134,7 +50,7 @@ async function dumpCalendar (content: HTMLElement) {
         table.append(tr)
 
         const elems = Object.entries(row)
-            .map(([key, value]) => prepareCalendarCell(key, <string>value))
+            .map(([key, value]) => prepareCalendarValue(key, <string>value))
 
         // Add all cells to row
         tr.append(...elems)
@@ -143,28 +59,18 @@ async function dumpCalendar (content: HTMLElement) {
     // Request the data dump
     await ipcRenderer.invoke("dump-request", "calendar")
 
-    // Sometimes the dump-stream listiner is removed to quickly.
-    // Why? no fucking clue, since dump-request resolves **AFTER** all data was sent
+    // Wait a bit after dump-request finishes (had some issues without a timeout)
+    // And remove listener from dump-stream channel
     await new Promise(resolve => setTimeout(resolve, 50))
-
-    ipcRenderer.removeAllListeners("dump-stream")
+    ipcRenderer.removeAllListeners("dump-stream-calendar")
 }
 
 // Add rows from calendar_dates.txt to window
-async function dumpDates (content: HTMLElement) {
-    // Create the header
-    const header = document.createElement("h5")
-    header.append("calendar_dates.txt")
-    content.append(header)
-
-    // Create the table
-    const table = document.createElement("table")
-    content.append(table)
-
+async function dumpDates (table: HTMLTableElement) {
     let wroteHeader: boolean = false
 
     // Iterate over rows of calendar_dates.txt
-    ipcRenderer.on("dump-stream", async (event: IpcRendererEvent, rows: Gtfs.Row[]) => {
+    ipcRenderer.on("dump-stream-calendarDates", async (event: IpcRendererEvent, rows: Gtfs.Row[]) => {
         const serviceId = rows[0].service_id
 
         // Write header, if it wasn't written
@@ -174,7 +80,7 @@ async function dumpDates (content: HTMLElement) {
 
             wroteHeader = true
             const headerElems = Object.keys(rows[0])
-                .map(key => prepareHeaderCell(key, "calendar_dates"))
+                .map(key => prepareDatesHeader(key))
             headerTr.append(...headerElems)
         }
 
@@ -196,7 +102,7 @@ async function dumpDates (content: HTMLElement) {
             table.append(tr)
 
             const elems = Object.entries(row)
-                .map(([key, value]) => prepareDatesCell(key, <string>value))
+                .map(([key, value]) => prepareDatesValue(key, <string>value))
 
             // Add all cells to row
             tr.append(...elems)
@@ -205,6 +111,11 @@ async function dumpDates (content: HTMLElement) {
 
     // Request the data dump
     await ipcRenderer.invoke("dump-request", "calendarDates")
+
+    // Wait a bit after dump-request finishes (had some issues without a timeout)
+    // And remove listener from dump-stream channel
+    await new Promise(resolve => setTimeout(resolve, 50))
+    ipcRenderer.removeAllListeners("dump-stream-calendarDates")
 }
 
 export async function init (): Promise<void> {
@@ -215,30 +126,62 @@ export async function init (): Promise<void> {
         throw new NoContentInHtml("this document has no element with id=content")
     }
 
+    // Check if calendar.txt and/or calendar_dates.txt exist
     const [calendarExists, datesExist]: [boolean, boolean] = await Promise.all([
         ipcRenderer.invoke("exists", "calendar"), ipcRenderer.invoke("exists", "calendarDates")
     ])
 
-    // Check if calendar.txt or calendar_dates.txt exist
-    if (!calendarExists && !datesExist) {
+    if (calendarExists && datesExist) {
+        // Create calendar.txt header
+        const calendarHeader = document.createElement("h5")
+        calendarHeader.append("calendar.txt")
+        content.append(calendarHeader)
+
+        // Create calendar.txt table
+        const calendarTable = document.createElement("table")
+        content.append(calendarTable)
+
+        // Add a separator
+        content.append(document.createElement("hr"))
+
+        // Create calendar_dates.txt header
+        const datesHeader = document.createElement("h5")
+        datesHeader.append("calendar_dates.txt")
+        content.append(datesHeader)
+
+        // Create calendar_dates.txt table
+        const datesTable = document.createElement("table")
+        content.append(datesTable)
+
+        // Dump both calendars and calendar_dates
+        await Promise.all([dumpCalendar(calendarTable), dumpDates(datesTable)])
+    } else if (calendarExists) {
+        // Create header
+        const header = document.createElement("h5")
+        header.append("calendar.txt")
+        content.append(header)
+
+        // Create table
+        const table = document.createElement("table")
+        content.append(table)
+
+        await dumpCalendar(table)
+    } else if (datesExist) {
+        // Create header
+        const header = document.createElement("h5")
+        header.append("calendar_dates.txt")
+        content.append(header)
+
+        // Create table
+        const table = document.createElement("table")
+        content.append(table)
+
+        await dumpDates(table)
+    } else {
         const h3 = document.createElement("h3")
         h3.className = "value-error"
 
         content.append(h3)
         h3.append("Error! File calendar.txt & calendar_dates.txt are not present in the GTFS")
-        return
-    }
-
-    // Show the 'calendar' table
-    if (calendarExists) {
-        await dumpCalendar(content)
-    }
-
-    // Add a separator
-    if (calendarExists && datesExist) { content.append(document.createElement("hr")) }
-
-    // SHow the 'calendarDates' table
-    if (datesExist) {
-        await dumpDates(content)
     }
 }

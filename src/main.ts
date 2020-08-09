@@ -79,9 +79,9 @@ app.on("window-all-closed", function () {
 /* List of ipc channels:
  * "dump-request", arg: (tableName - shapes)
  *     returns: --
- *     side effect: starts dumping data on "dump-stream" channel
+ *     side effect: starts dumping data on `dump-stream-${tableName}` channel
  *
- * "dump-stream"
+ * `dump-stream-${tableName}`
  *     ! main → renderer !
  *     returns: Gtfs.Row
  *
@@ -116,10 +116,12 @@ ipcMain.handle(
     function (event: IpcMainInvokeEvent, ...args: [Exclude<keyof Gtfs.Obj, "shapes">]): "done" {
         const tableName = args[0]
         const tableMap = mainGtfsObj[tableName]
+        const dumpChannel = "dump-stream-" + tableName
+
         if (tableMap === undefined) { return "done" }
 
         for (const [, value] of tableMap) {
-            mainWindow.webContents.send("dump-stream", value)
+            mainWindow.webContents.send(dumpChannel, value)
         }
 
         return "done"

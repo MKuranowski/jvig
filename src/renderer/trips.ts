@@ -20,83 +20,8 @@ import { ipcRenderer } from "electron"
 import type { IpcRendererEvent } from "electron"
 
 import { NoContentInHtml } from "../errs"
-import { validTripsFields, extendedTripsFields } from "../validFields"
+import { prepareTripsHeader, prepareTripsValue } from "../tables/trips"
 import type * as Gtfs from "../gtfsTypes"
-
-// A handler for createing cell elements of the CSV header
-export function prepareHeaderCell (key: string): HTMLElement {
-    const el = document.createElement("th")
-    el.append(key)
-
-    // Set background color for extended or invalid fields
-    if (extendedTripsFields.has(key)) {
-        el.className = "value-extended"
-    } else if (key !== "" && !validTripsFields.has(key)) {
-        el.className = "value-unrecognized"
-    }
-
-    return el
-}
-
-// A handler for creating cell with value
-export function prepareValueCell (key: string, value: string, row: any): HTMLElement {
-    const cellElem = document.createElement("td")
-    let elem: string | HTMLAnchorElement
-
-    switch (key) {
-    case "_link_times":
-        elem = document.createElement("a")
-        elem.href = `trip.html?id=${encodeURIComponent(value)}`
-        elem.append("Trip times →")
-        break
-    case "route_id":
-        elem = document.createElement("a")
-        elem.href = `trips.html?route=${encodeURIComponent(value)}`
-        elem.append(value)
-        break
-    case "direction_id":
-    case "exceptional":
-        if (value !== "0" && value !== "1") {
-            cellElem.className = "value-invalid"
-        }
-        elem = value
-        break
-    case "block_id":
-        elem = document.createElement("a")
-        elem.href = `trips.html?block=${encodeURIComponent(value)}`
-        elem.append(value)
-        break
-    case "wheelchair_accessible":
-        if (value === "" || value === "0") {
-            elem = `${value} (♿❓)`
-        } else if (value === "1") {
-            elem = `${value} (♿✔️)`
-        } else if (value === "2") {
-            elem = `${value} (♿❌)`
-        } else {
-            cellElem.className = "value-invalid"
-            elem = value
-        }
-        break
-    case "bikes_allowed":
-        if (value === "" || value === "0") {
-            elem = `${value} (🚲❓)`
-        } else if (value === "1") {
-            elem = `${value} (🚲✔️)`
-        } else if (value === "2") {
-            elem = `${value} (🚲❌)`
-        } else {
-            cellElem.className = "value-invalid"
-            elem = value
-        }
-        break
-    default:
-        elem = value
-    }
-
-    cellElem.append(elem)
-    return cellElem
-}
 
 export async function init (): Promise<void> {
     const content = document.getElementById("content")
@@ -120,7 +45,7 @@ export async function init (): Promise<void> {
         return
     }
 
-    // Get the csv.Parser
+    // Check if trips.txt exists
     const exists = await ipcRenderer.invoke("exists", "trips") as boolean
 
     if (!exists) {
@@ -137,7 +62,7 @@ export async function init (): Promise<void> {
     content.append(table)
 
     // Add a handler when data arrives
-    ipcRenderer.on("dump-stream", async (event: IpcRendererEvent, row: Gtfs.Row) => {
+    ipcRenderer.on("dump-stream-trips", async (event: IpcRendererEvent, row: Gtfs.Row) => {
         if (!wroteHeader) {
             // Write header, if it wasn't written
             const headerTr = document.createElement("tr")
@@ -145,7 +70,7 @@ export async function init (): Promise<void> {
 
             wroteHeader = true
             const headerElems = ["", ...Object.keys(row)]
-                .map(key => prepareHeaderCell(key))
+                .map(key => prepareTripsHeader(key))
             headerTr.append(...headerElems)
         }
 
@@ -161,7 +86,7 @@ export async function init (): Promise<void> {
         table.append(tr)
 
         const elems = [["_link_times", row.trip_id], ...Object.entries(row)]
-            .map(([key, value]) => prepareValueCell(key, value, row))
+            .map(([key, value]) => prepareTripsValue(key, value))
 
         // Add all cells to row
         tr.append(...elems)
@@ -169,4 +94,9 @@ export async function init (): Promise<void> {
 
     // Request the data dump
     await ipcRenderer.invoke("dump-request", "trips")
+
+    // Wait a bit after dump-request finishes (had some issues without a timeout)
+    // And remove listener from dump-stream channel
+    await new Promise(resolve => setTimeout(resolve, 50))
+    ipcRenderer.removeAllListeners("dump-stream-trips")
 }

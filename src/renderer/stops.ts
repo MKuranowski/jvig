@@ -19,11 +19,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { ipcRenderer } from "electron"
 import type { IpcRendererEvent } from "electron"
 
-// Local imports
 import { NoContentInHtml } from "../errs"
 import { validLat, validLon } from "../util"
-import { validStopsFields } from "../validFields"
-
+import { prepareStopsHeader, prepareStopsValue } from "../tables/stops"
 import type * as Gtfs from "../gtfsTypes"
 
 // Leaflet
@@ -84,70 +82,6 @@ async function createMarker (markerGroup: L.FeatureGroup, row: any) {
     m.addTo(markerGroup)
 }
 
-// A handler for createing cell elements of the CSV header
-export function prepareHeaderCell (key: string): HTMLElement {
-    const el = document.createElement("th")
-    el.append(key)
-
-    // Set a khaki background for unrecognized field names
-    if (key !== "" && !validStopsFields.has(key)) { el.className = "value-unrecognized" }
-
-    return el
-}
-
-// A handler for creating cell elements of a normal row
-export function prepareValueCell (key: string, value: string): HTMLElement {
-    const cellElem = document.createElement("td")
-    let elem: string | HTMLAnchorElement
-
-    switch (key) {
-    case "_link_departures":
-        elem = document.createElement("a")
-        elem.href = `stop.html?id=${encodeURIComponent(value)}`
-        elem.append("Stop departures →")
-        break
-    case "stop_lat":
-        if (validLat(value) === null) { cellElem.className = "value-invalid" }
-        elem = value
-        break
-    case "stop_lon":
-        if (validLon(value) === null) { cellElem.className = "value-invalid" }
-        elem = value
-        break
-    case "location_type":
-        if (value === "") {
-            elem = value
-        } else if (value === "0") {
-            elem = `${value} (🚏)`
-        } else if (value === "1") {
-            elem = `${value} (🏢)`
-        } else if (value === "2") {
-            elem = `${value} (➡️🚪)`
-        } else {
-            cellElem.className = "value-invalid"
-            elem = value
-        }
-        break
-    case "wheelchair_boarding":
-        if (value === "" || value === "0") {
-            elem = `${value} (♿❓)`
-        } else if (value === "1") {
-            elem = `${value} (♿✔️)`
-        } else if (value === "2") {
-            elem = `${value} (♿❌)`
-        } else {
-            cellElem.className = "value-invalid"
-            elem = value
-        }
-        break
-    default:
-        elem = value
-    }
-
-    cellElem.append(elem)
-    return cellElem
-}
-
 export async function init (): Promise<void> {
     const content = document.getElementById("content")
     let wroteHeader: boolean = false
@@ -174,7 +108,7 @@ export async function init (): Promise<void> {
     const table = document.createElement("table")
     content.append(table)
 
-    ipcRenderer.on("dump-stream", async (event: IpcRendererEvent, row: Gtfs.Row) => {
+    ipcRenderer.on("dump-stream-stops", async (event: IpcRendererEvent, row: Gtfs.Row) => {
         if (!wroteHeader) {
             // Write header, if it wasn't written
             const headerTr = document.createElement("tr")
@@ -182,7 +116,7 @@ export async function init (): Promise<void> {
 
             wroteHeader = true
             const headerElems = ["", ...Object.keys(row)]
-                .map(key => prepareHeaderCell(key))
+                .map(key => prepareStopsHeader(key))
             headerTr.append(...headerElems)
         }
 
@@ -195,7 +129,7 @@ export async function init (): Promise<void> {
                 table.append(tr)
 
                 const elems = [["_link_departures", row.stop_id], ...Object.entries(row)]
-                    .map(([key, value]) => prepareValueCell(key, value))
+                    .map(([key, value]) => prepareStopsValue(key, value))
 
                 // Add all cells to row
                 tr.append(...elems)
@@ -208,4 +142,9 @@ export async function init (): Promise<void> {
 
     // Move to all stops
     map.fitBounds(markerGroup.getBounds())
+
+    // Wait a bit after dump-request finishes (had some issues without a timeout)
+    // And remove listener from dump-stream channel
+    await new Promise(resolve => setTimeout(resolve, 50))
+    ipcRenderer.removeAllListeners("dump-stream-stops")
 }
