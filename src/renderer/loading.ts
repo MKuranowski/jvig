@@ -126,8 +126,4 @@ async function onNewStatus (event: IpcRendererEvent, newStatus: LoadingStatus): 
 export async function init (): Promise<void> {
     ipcRenderer.on("loading-status", onNewStatus)
     await ipcRenderer.invoke("loading-status-req")
-
-    // Wait a bit before removing the listener
-    await new Promise(resolve => setTimeout(resolve, 50))
-    ipcRenderer.removeAllListeners("loading-status")
 }
