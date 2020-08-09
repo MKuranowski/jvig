@@ -64,5 +64,12 @@ export const menuTempl = [
             { role: "togglefullscreen" }
         ]
     },
-    { role: "windowMenu" }
+    {
+        label: "Window",
+        submenu: [
+            { role: "minimize" },
+            { role: "close" },
+            { role: "quit" }
+        ]
+    }
 ]
