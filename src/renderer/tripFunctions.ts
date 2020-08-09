@@ -42,7 +42,7 @@ export function rowKeysWithStopName (obj: Gtfs.Row): string[] {
     const stopIdIdx = kList.indexOf("stop_id")
 
     if (stopIdIdx >= 0) {
-        kList.splice(stopIdIdx, 0, "stop_name")
+        kList.splice(stopIdIdx, 0, "_stop_name")
     }
 
     return kList
@@ -57,7 +57,7 @@ export function rowEntriesWithStopName (obj: Gtfs.Row): [string, string][] {
     const stopIdIdx = kvList.map(i => i[0]).indexOf("stop_id")
 
     if (stopIdIdx >= 0) {
-        kvList.splice(stopIdIdx, 0, ["stop_name", ""])
+        kvList.splice(stopIdIdx, 0, ["_stop_name", ""])
     }
 
     return kvList

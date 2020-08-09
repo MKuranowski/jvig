@@ -26,6 +26,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     --color-bg-invalid: salmon;
     --color-bg-unrecognized: khaki;
     --color-bg-extended: skyblue;
+    --color-bg-inherited: palegreen;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -38,6 +39,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         --color-bg-invalid: darkred;
         --color-bg-unrecognized: darkgoldenrod;
         --color-bg-extended: darkslateblue;
+        --color-bg-inherited: darkgreen;
     }
 
     a { color: darkturquoise }
@@ -46,7 +48,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /* Generic Document Settings */
 
 body {
-    max-width: 80rem;
+    max-width: 90rem;
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -101,6 +103,10 @@ th {
 
 .value-error {
     background-color: var(--color-bg-error);
+}
+
+.value-inherited {
+    background-color: var(--color-bg-inherited);
 }
 
 /* A style used when a color blob is displayed around route_short_name */

@@ -69,7 +69,7 @@ export async function init (): Promise<void> {
             table.append(headerTr)
 
             wroteHeader = true
-            const headerElems = ["", ...Object.keys(row)]
+            const headerElems = ["", ...Object.keys(row), "_start_time", "_end_time"]
                 .map(key => prepareTripsHeader(key))
             headerTr.append(...headerElems)
         }
@@ -81,12 +81,27 @@ export async function init (): Promise<void> {
             return
         }
 
+        // Get stopTimes
+        const times = await ipcRenderer.invoke("find", "stopTimes", row.trip_id) as null | Gtfs.Row[]
+        let startTime: string
+        let endTime: string
+        if (times !== null) {
+            startTime = times[0].arrival_time || times[0].departure_time || ""
+            endTime = times[times.length - 1].departure_time ||
+                times[times.length - 1].arrival_time || ""
+        } else {
+            startTime = ""
+            endTime = ""
+        }
+
         // Write the normal row
         const tr = document.createElement("tr")
         table.append(tr)
 
-        const elems = [["_link_times", row.trip_id], ...Object.entries(row)]
-            .map(([key, value]) => prepareTripsValue(key, value))
+        const elems = [
+            ["_link_times", row.trip_id], ...Object.entries(row),
+            ["_start_time", startTime], ["_end_time", endTime]
+        ].map(([key, value]) => prepareTripsValue(key, value))
 
         // Add all cells to row
         tr.append(...elems)

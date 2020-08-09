@@ -32,10 +32,12 @@ export function prepareTripsHeader (key: string): HTMLTableHeaderCellElement {
 
     switch (key) {
     case "_start_time":
-        el.append("first arrival_time (from stop_times.txt)")
+        el.className = "value-inherited"
+        el.append("first time")
         break
     case "_end_time":
-        el.append("last departure_time (from stop_times.txt)")
+        el.className = "value-inherited"
+        el.append("last time")
         break
     default:
         el.append(key)
@@ -61,7 +63,7 @@ export function prepareTripsValue (key: string, value: string): HTMLTableDataCel
         break
     case "_start_time":
     case "_end_time":
-        if (!validTime(value)) { cellElem.className = "value-invalid" }
+        if (value !== "" && !validTime(value)) { cellElem.className = "value-invalid" }
         elem = value
         break
     case "route_id":
