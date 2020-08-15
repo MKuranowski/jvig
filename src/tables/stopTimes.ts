@@ -29,9 +29,9 @@ export function prepareTimesHeader (key: string): HTMLTableHeaderCellElement {
     const el = document.createElement("th")
 
     // Set background color for invalid fields
-    if (key === "_stop_name") {
+    if (key === "_stop_name" || key === "_trip_headsign" || key === "_trip_short_name") {
         el.className = "value-inherited"
-        key = "stop_name"
+        key = key.substring(1)
     } else if (key !== "" && !validTimesFields.has(key)) {
         el.className = "value-unrecognized"
     }

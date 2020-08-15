@@ -219,6 +219,16 @@ async function handleStopTimes (stopId: string, div: HTMLDivElement): Promise<vo
                 return
             }
 
+            // Add trip_short_name and trip_headsign
+            if (tripRow.trip_short_name !== undefined) {
+                row._trip_short_name = tripRow.trip_short_name
+            }
+
+            if (tripRow.trip_headsign !== undefined) {
+                row._trip_headsign = tripRow.trip_headsign
+            }
+
+            // Add row to rowsToView
             if (rowsToView.has(tripRow.service_id)) {
                 // @ts-ignore
                 rowsToView.get(tripRow.service_id).push(row)
