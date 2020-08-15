@@ -84,6 +84,16 @@ export function validTime (timeS: string): boolean {
 }
 
 /**
+ * Converts given GTFS arrival_time/departure_time to number of seconds since noon-12h.
+ * You should first check if given time is valid with validTime.
+ * @param timeS HH:MM:SS
+ */
+export function timeToInt (timeS: string): number {
+    const [h, m, s] = timeS.split(":").map(i => parseInt(i))
+    return h * 3600 + m * 60 + s
+}
+
+/**
  * Checks if given route_color/route_text_color is valid and safe to use
  * Returns "#xxxxxx" or null (if the color was invalid)
  * @param value route_color/route_text_color value

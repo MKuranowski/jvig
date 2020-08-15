@@ -20,7 +20,7 @@ import { ipcRenderer } from "electron"
 import type { IpcRendererEvent } from "electron"
 
 import { NoContentInHtml } from "../errs"
-import { validLat, validLon } from "../util"
+import { validLat, validLon, validTime, timeToInt } from "../util"
 import { prepareStopsHeader, prepareStopsValue } from "../tables/stops"
 import { prepareTimesHeader, prepareTimesValue } from "../tables/stopTimes"
 import * as Gtfs from "../gtfsTypes"
@@ -195,6 +195,7 @@ async function handleStops (stopId: string, map: L.Map, div: HTMLDivElement): Pr
  */
 async function handleStopTimes (stopId: string, div: HTMLDivElement): Promise<void> {
     let wroteHeader: boolean = false
+    let colspan: number = -1
 
     // Add elements to the div
     const h5 = document.createElement("h5")
@@ -203,30 +204,27 @@ async function handleStopTimes (stopId: string, div: HTMLDivElement): Promise<vo
 
     div.append(document.createElement("hr"), h5, table)
 
+    // service_id → stop_times rows
+    const rowsToView: Map<string, Gtfs.Row[]> = new Map()
     const emptyMap = new Map()
 
     // Define a handler for incoming data
     ipcRenderer.on("dump-stream-stopTimes", async (event: IpcRendererEvent, rows: Gtfs.Row[]) => {
-        rows.filter(row => row.stop_id === stopId).forEach(row => {
-            if (!wroteHeader) {
-                // Write header, if it wasn't written
-                const headerTr = document.createElement("tr")
-                table.append(headerTr)
+        rows.filter(row => row.stop_id === stopId).forEach(async row => {
+            // Get service_id from trips
+            const tripRow = await ipcRenderer.invoke("find", "trips", row.trip_id)
 
-                wroteHeader = true
-                const headerElems = Object.keys(row).map(key => prepareTimesHeader(key))
-                headerTr.append(...headerElems)
+            // Assert we have a corresponding tripRow
+            if (tripRow === null) {
+                return
             }
 
-            // Write the normal row
-            const tr = document.createElement("tr")
-            table.append(tr)
-
-            const elems = Object.entries(row)
-                .map(([key, value]) => prepareTimesValue(key, value, row, emptyMap))
-
-            // Add all cells to row
-            tr.append(...elems)
+            if (rowsToView.has(tripRow.service_id)) {
+                // @ts-ignore
+                rowsToView.get(tripRow.service_id).push(row)
+            } else {
+                rowsToView.set(tripRow.service_id, [row])
+            }
         })
     })
 
@@ -237,6 +235,55 @@ async function handleStopTimes (stopId: string, div: HTMLDivElement): Promise<vo
     // And remove listener from dump-stream channel
     await new Promise(resolve => setTimeout(resolve, 50))
     ipcRenderer.removeAllListeners("dump-stream-stopTimes")
+
+    // Add rows to the table
+    for (const [serviceId, rows] of rowsToView) {
+        // Write header, if it wasn't written
+        if (!wroteHeader) {
+            colspan = Object.keys(rows[0]).length
+            const headerTr = document.createElement("tr")
+            table.append(headerTr)
+
+            wroteHeader = true
+            const headerElems = Object.keys(rows[0])
+                .map(key => prepareTimesHeader(key))
+            headerTr.append(...headerElems)
+        }
+
+        // Add row with service_id: something
+        const serviceRow = document.createElement("tr")
+        const serviceCell = document.createElement("td")
+
+        serviceCell.colSpan = colspan
+        serviceCell.className = "align-center"
+        serviceCell.append(`service_id: ${serviceId}`)
+        serviceRow.append(serviceCell)
+        table.append(serviceRow)
+
+        // Sort rows by time
+        rows.sort((a, b) => {
+            const aTimeStr = a.departure_time || a.arrival_time
+            const bTimeStr = b.departure_time || b.arrival_time
+            if (validTime(aTimeStr) && validTime(bTimeStr)) {
+                return timeToInt(aTimeStr) - timeToInt(bTimeStr)
+            } else {
+                return 0
+            }
+        })
+
+        // Iterate over stop_time rows
+        for (const row of rows) {
+            // Create table row
+            const tr = document.createElement("tr")
+            table.append(tr)
+
+            const elems = Object.entries(row)
+                .map(([key, value]) => prepareTimesValue(key, value, row, emptyMap))
+
+            // Add all cells to row
+            tr.append(...elems)
+        }
+    }
 }
 
 export async function init () {
