@@ -33,8 +33,9 @@ export async function init (): Promise<void> {
     }
 
     // Check if we should filter by a specific route_id/block_id
-    const expectedRoute = (new URLSearchParams(window.location.search)).get("route")
-    const expectedBlock = (new URLSearchParams(window.location.search)).get("block")
+    const urlparams = new URLSearchParams(window.location.search)
+    const expectedRoute = urlparams.get("route")
+    const expectedBlock = urlparams.get("block")
 
     if (expectedRoute === null && expectedBlock === null) {
         const h3 = document.createElement("h3")
