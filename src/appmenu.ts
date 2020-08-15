@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { app, dialog } from "electron"
 
-const version = app.getVersion() + (app.isPackaged ? "" : " live")
+const version = app.isPackaged ? app.getVersion() : "non-packaged version"
 const aboutMsg = `
 jvig (${version}) - GTFS Viewer application written using Typescript & Electron
 Copyright © 2020 Mikołaj Kuranowski
