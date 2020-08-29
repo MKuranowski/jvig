@@ -157,7 +157,7 @@ async function handleStops (stopId: string, map: L.Map, div: HTMLDivElement): Pr
             const spannedCell = document.createElement("td")
             spannedCell.colSpan = Object.keys(stopData).length + 2
             spannedCell.className = "align-center"
-            spannedCell.append("Other stations belonging to this station group:")
+            spannedCell.append("Other stations in this group:")
 
             row.append(spannedCell)
             table.append(row)
