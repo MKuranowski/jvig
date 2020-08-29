@@ -30,9 +30,8 @@ Dragging a file/folder to the icon on Windows should also work.
 Features/Todos
 --------------
 
-| thing              | done? |
+| GTFS Table         | Viewable? |
 |--------------------|-------|
-|<td colspan=2>GTFS features</td>|
 | agencies           | ✔️     |
 | stops              | ✔️     |
 | routes             | ✔️     |
@@ -45,7 +44,9 @@ Features/Todos
 | feed_info          | ❌    |
 | attributions       | ❌    |
 | translations       | ❌    |
-|<td colspan=2>App Improvements</td>|
+
+| App Improvement       | Done? |
+|-----------------------|----|
 | search                | ❌ |
 | improve snappiness    | ❌ |
 | verify dark mode      | ❌ |
