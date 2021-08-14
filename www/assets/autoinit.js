@@ -1,6 +1,6 @@
 /*
 jvig - GTFS Viewer application written using Typescript & Electron
-Copyright © 2020 Mikołaj Kuranowski
+Copyright © 2020-2021 Mikołaj Kuranowski
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,20 +17,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 /* global init:readonly */
-const { shell } = require("electron")
+const { shell } = require('electron')
 
-document.addEventListener("click", event => {
-    if (event.target === null) { return }
-    const target = event.target
+document.addEventListener('click', event => {
+  if (event.target === null) { return }
+  const target = event.target
 
-    if (target.tagName.toLowerCase() === "a" && target.href.match(/^https?:\/\/.*$/)) {
-        event.preventDefault()
-        shell.openExternal(target.href)
-    }
+  if (target.tagName.toLowerCase() === 'a' && target.href.match(/^https?:\/\/.*$/)) {
+    event.preventDefault()
+    shell.openExternal(target.href)
+  }
 }, false)
 
 document.onreadystatechange = async function () {
-    if (document.readyState === "interactive") {
-        await init()
-    }
+  if (document.readyState === 'interactive') {
+    await init()
+  }
 }

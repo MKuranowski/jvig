@@ -1,6 +1,6 @@
 /*
 jvig - GTFS Viewer application written using Typescript & Electron
-Copyright © 2020 Mikołaj Kuranowski
+Copyright © 2020-2021 Mikołaj Kuranowski
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,35 +18,35 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 // Valid fields
 const validAgencyFields = new Set([
-    "agency_id", "agency_name", "agency_url", "agency_timezone", "agency_lang", "agency_phone",
-    "agency_fare_url", "agency_email"
+  'agency_id', 'agency_name', 'agency_url', 'agency_timezone', 'agency_lang', 'agency_phone',
+  'agency_fare_url', 'agency_email'
 ])
 
 // Functions
 export function prepareAgencyHeader (key: string): HTMLTableHeaderCellElement {
-    const el = document.createElement("th")
-    el.append(key)
+  const el = document.createElement('th')
+  el.append(key)
 
-    // Set a khaki background for unrecognized field names
-    if (key !== "" && !validAgencyFields.has(key)) { el.className = "value-unrecognized" }
+  // Set a khaki background for unrecognized field names
+  if (key !== '' && !validAgencyFields.has(key)) { el.className = 'value-unrecognized' }
 
-    return el
+  return el
 }
 
 export function prepareAgencyValue (key: string, value: string): HTMLTableDataCellElement {
-    const cellElem = document.createElement("td")
-    let elem: string | HTMLAnchorElement
+  const cellElem = document.createElement('td')
+  let elem: string | HTMLAnchorElement
 
-    switch (key) {
-    case "_link_routes":
-        elem = document.createElement("a")
-        elem.href = `routes.html?agency=${encodeURIComponent(value)}`
-        elem.append("Agency routes →")
-        break
+  switch (key) {
+    case '_link_routes':
+      elem = document.createElement('a')
+      elem.href = `routes.html?agency=${encodeURIComponent(value)}`
+      elem.append('Agency routes →')
+      break
     default:
-        elem = value
-    }
+      elem = value
+  }
 
-    cellElem.append(elem)
-    return cellElem
+  cellElem.append(elem)
+  return cellElem
 }

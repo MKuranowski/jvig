@@ -1,6 +1,6 @@
 /*
 jvig - GTFS Viewer application written using Typescript & Electron
-Copyright © 2020 Mikołaj Kuranowski
+Copyright © 2020-2021 Mikołaj Kuranowski
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,98 +16,99 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { validTime } from "../util"
+import { validTime } from '../util'
+import type * as Gtfs from '../gtfsTypes'
 
 // Valid fields
 const validTimesFields = new Set([
-    "trip_id", "arrival_time", "departure_time", "stop_id", "stop_sequence",
-    "stop_headsign", "pickup_type", "drop_off_type", "shape_dist_traveled", "timepoint"
+  'trip_id', 'arrival_time', 'departure_time', 'stop_id', 'stop_sequence',
+  'stop_headsign', 'pickup_type', 'drop_off_type', 'shape_dist_traveled', 'timepoint'
 ])
 
 // Functions
 export function prepareTimesHeader (key: string): HTMLTableHeaderCellElement {
-    const el = document.createElement("th")
+  const el = document.createElement('th')
 
-    // Set background color for invalid fields
-    if (key === "_stop_name" || key === "_trip_headsign" || key === "_trip_short_name") {
-        el.className = "value-inherited"
-        key = key.substring(1)
-    } else if (key !== "" && !validTimesFields.has(key)) {
-        el.className = "value-unrecognized"
-    }
+  // Set background color for invalid fields
+  if (key === '_stop_name' || key === '_trip_headsign' || key === '_trip_short_name') {
+    el.className = 'value-inherited'
+    key = key.substring(1)
+  } else if (key !== '' && !validTimesFields.has(key)) {
+    el.className = 'value-unrecognized'
+  }
 
-    el.append(key)
-    return el
+  el.append(key)
+  return el
 }
 
-export function prepareTimesValue (key: string, value: string, row: any,
-    findStopData: Map<string, string[]>): HTMLTableDataCellElement {
-    const cellElem = document.createElement("td")
-    let elem: string | HTMLAnchorElement
+export function prepareTimesValue (key: string, value: string, row: Gtfs.Row,
+  findStopData: Map<string, string[]>): HTMLTableDataCellElement {
+  const cellElem = document.createElement('td')
+  let elem: string | HTMLAnchorElement
 
-    switch (key) {
-    case "trip_id":
-        elem = document.createElement("a")
-        elem.href = `trip.html?id=${encodeURIComponent(value)}`
-        elem.append(value)
-        break
-    case "arrival_time":
-    case "departure_time":
-        if (!validTime(value)) { cellElem.className = "value-invalid" }
-        elem = value
-        break
-    case "stop_id":
-        elem = document.createElement("a")
-        elem.href = `stop.html?id=${encodeURIComponent(value)}`
-        elem.append(value)
-        break
-    case "_stop_name":
-        if (!findStopData.has(row.stop_id)) {
-            findStopData.set(row.stop_id, [])
-        }
-        // @ts-ignore | it's defined above dude
-        findStopData.get(row.stop_id).push(row.stop_sequence)
+  switch (key) {
+    case 'trip_id':
+      elem = document.createElement('a')
+      elem.href = `trip.html?id=${encodeURIComponent(value)}`
+      elem.append(value)
+      break
+    case 'arrival_time':
+    case 'departure_time':
+      if (!validTime(value)) { cellElem.className = 'value-invalid' }
+      elem = value
+      break
+    case 'stop_id':
+      elem = document.createElement('a')
+      elem.href = `stop.html?id=${encodeURIComponent(value)}`
+      elem.append(value)
+      break
+    case '_stop_name':
+      if (!findStopData.has(row.stop_id)) {
+        findStopData.set(row.stop_id, [])
+      }
+      // @ts-expect-error | it's defined above dude
+      findStopData.get(row.stop_id).push(row.stop_sequence)
 
-        cellElem.id = "stop_name_" + row.stop_sequence
-        elem = ""
-        break
-    case "stop_sequence":
-        if (value.match(/^\d+$/) === null) { cellElem.className = "value-invalid" }
+      cellElem.id = 'stop_name_' + row.stop_sequence
+      elem = ''
+      break
+    case 'stop_sequence':
+      if (value.match(/^\d+$/) === null) { cellElem.className = 'value-invalid' }
+      elem = value
+      break
+    case 'pickup_type':
+    case 'drop_off_type':
+      if (value === '' || value === '0') {
+        elem = `${value} (🚏)`
+      } else if (value === '1') {
+        elem = '1 (🚫)'
+      } else if (value === '2') {
+        elem = '2 (☎️)'
+      } else if (value === '3') {
+        elem = '3 (👈)'
+      } else {
+        cellElem.className = 'value-invalid'
         elem = value
-        break
-    case "pickup_type":
-    case "drop_off_type":
-        if (value === "" || value === "0") {
-            elem = `${value} (🚏)`
-        } else if (value === "1") {
-            elem = "1 (🚫)"
-        } else if (value === "2") {
-            elem = "2 (☎️)"
-        } else if (value === "3") {
-            elem = "3 (👈)"
-        } else {
-            cellElem.className = "value-invalid"
-            elem = value
-        }
-        break
-    case "shape_dist_traveled":
-        if (value.match(/^\d+(.\d+)?$/) === null) { cellElem.className = "value-invalid" }
+      }
+      break
+    case 'shape_dist_traveled':
+      if (value.match(/^\d+(.\d+)?$/) === null) { cellElem.className = 'value-invalid' }
+      elem = value
+      break
+    case 'timepoint':
+      if (value === '' || value === '0') {
+        elem = `${value} (⌚📌)`
+      } else if (value === '1') {
+        elem = '1 (⌚🤷)'
+      } else {
+        cellElem.className = 'value-invalid'
         elem = value
-        break
-    case "timepoint":
-        if (value === "" || value === "0") {
-            elem = `${value} (⌚📌)`
-        } else if (value === "1") {
-            elem = "1 (⌚🤷)"
-        } else {
-            cellElem.className = "value-invalid"
-            elem = value
-        }
-        break
+      }
+      break
     default:
-        elem = value
-    }
+      elem = value
+  }
 
-    cellElem.append(elem)
-    return cellElem
+  cellElem.append(elem)
+  return cellElem
 }

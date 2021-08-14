@@ -15,13 +15,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+/* cspell: disable */
 
-import { app, dialog } from "electron"
+import { app, dialog } from 'electron'
 
-const version = app.isPackaged ? app.getVersion() : "non-packaged version"
+const version = app.isPackaged ? app.getVersion() : 'non-packaged version'
 const aboutMsg = `
 jvig (${version}) - GTFS Viewer application written using Typescript & Electron
-Copyright © 2020 Mikołaj Kuranowski
+Copyright © 2020-2021 Mikołaj Kuranowski
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -37,39 +38,39 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see https://www.gnu.org/licenses/.
 `
 
-export const menuTempl = [
-    {
-        label: "About",
-        click: async () => dialog.showMessageBox({
-            type: "none", buttons: ["Close"], title: "jvig - About", message: aboutMsg
-        })
-    },
-    {
-        label: "Edit",
-        submenu: [
-            { role: "copy" },
-            { role: "selectall" }
-        ]
-    },
-    {
-        label: "View",
-        submenu: [
-            { role: "reload" },
-            { role: "forcereload" },
-            { type: "separator" },
-            { role: "resetzoom" },
-            { role: "zoomin" },
-            { role: "zoomout" },
-            { type: "separator" },
-            { role: "togglefullscreen" }
-        ]
-    },
-    {
-        label: "Window",
-        submenu: [
-            { role: "minimize" },
-            { role: "close" },
-            { role: "quit" }
-        ]
-    }
+export const menuTemplate = [
+  {
+    label: 'About',
+    click: async () => await dialog.showMessageBox({
+      type: 'none', buttons: ['Close'], title: 'jvig - About', message: aboutMsg
+    })
+  },
+  {
+    label: 'Edit',
+    submenu: [
+      { role: 'copy' },
+      { role: 'selectall' }
+    ]
+  },
+  {
+    label: 'View',
+    submenu: [
+      { role: 'reload' },
+      { role: 'forcereload' },
+      { type: 'separator' },
+      { role: 'resetzoom' },
+      { role: 'zoomin' },
+      { role: 'zoomout' },
+      { type: 'separator' },
+      { role: 'togglefullscreen' }
+    ]
+  },
+  {
+    label: 'Window',
+    submenu: [
+      { role: 'minimize' },
+      { role: 'close' },
+      { role: 'quit' }
+    ]
+  }
 ]

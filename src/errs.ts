@@ -1,6 +1,6 @@
 /*
 jvig - GTFS Viewer application written using Typescript & Electron
-Copyright © 2020 Mikołaj Kuranowski
+Copyright © 2020-2021 Mikołaj Kuranowski
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

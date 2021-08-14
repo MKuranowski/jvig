@@ -1,6 +1,6 @@
 /*
 jvig - GTFS Viewer application written using Typescript & Electron
-Copyright © 2020 Mikołaj Kuranowski
+Copyright © 2020-2021 Mikołaj Kuranowski
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -22,20 +22,20 @@ export interface Row { [key: string]: string }
 
 export type FileToRow = Map<string, Row>
 export type FileToList = Map<string, Row[]>
-export type FileShapes = Map<string, [number, number][]>
+export type FileShapes = Map<string, Array<[number, number]>>
 export type StopChildren = Map<string, string[]>
 
 export interface Obj {
-    agency?: FileToRow,
-    stops?: FileToRow,
-    _stopChildren?: StopChildren,
-    routes?: FileToRow,
-    trips?: FileToRow,
-    calendar?: FileToRow,
-    calendarDates?: FileToList,
-    frequencies?: FileToList,
-    stopTimes?: FileToList,
-    shapes?: FileShapes
+  agency?: FileToRow
+  stops?: FileToRow
+  _stopChildren?: StopChildren
+  routes?: FileToRow
+  trips?: FileToRow
+  calendar?: FileToRow
+  calendarDates?: FileToList
+  frequencies?: FileToList
+  stopTimes?: FileToList
+  shapes?: FileShapes
 }
 
 export type PossibleValues = MapValue<Obj[keyof Obj]>

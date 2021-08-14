@@ -1,6 +1,6 @@
 /*
 jvig - GTFS Viewer application written using Typescript & Electron
-Copyright © 2020 Mikołaj Kuranowski
+Copyright © 2020-2021 Mikołaj Kuranowski
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,74 +16,74 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { validLat, validLon } from "../util"
+import { validLat, validLon } from '../util'
 
 // Valid fields
 const validStopsFields = new Set([
-    "stop_id", "stop_code", "stop_name", "stop_desc", "stop_lat", "stop_lon", "zone_id",
-    "stop_url", "location_type", "parent_station", "stop_timezone", "wheelchair_boarding",
-    "platform_code"
+  'stop_id', 'stop_code', 'stop_name', 'stop_desc', 'stop_lat', 'stop_lon', 'zone_id',
+  'stop_url', 'location_type', 'parent_station', 'stop_timezone', 'wheelchair_boarding',
+  'platform_code'
 ])
 
 // Functions
 export function prepareStopsHeader (key: string): HTMLTableHeaderCellElement {
-    const el = document.createElement("th")
-    el.append(key)
+  const el = document.createElement('th')
+  el.append(key)
 
-    // Set a khaki background for unrecognized field names
-    if (key !== "" && !validStopsFields.has(key)) { el.className = "value-unrecognized" }
+  // Set a khaki background for unrecognized field names
+  if (key !== '' && !validStopsFields.has(key)) { el.className = 'value-unrecognized' }
 
-    return el
+  return el
 }
 
 export function prepareStopsValue (key: string, value: string): HTMLTableDataCellElement {
-    const cellElem = document.createElement("td")
-    let elem: string | HTMLAnchorElement
+  const cellElem = document.createElement('td')
+  let elem: string | HTMLAnchorElement
 
-    switch (key) {
-    case "_link_departures":
-        elem = document.createElement("a")
-        elem.href = `stop.html?id=${encodeURIComponent(value)}`
-        elem.append("Stop departures →")
-        break
-    case "stop_lat":
-        if (validLat(value) === null) { cellElem.className = "value-invalid" }
+  switch (key) {
+    case '_link_departures':
+      elem = document.createElement('a')
+      elem.href = `stop.html?id=${encodeURIComponent(value)}`
+      elem.append('Stop departures →')
+      break
+    case 'stop_lat':
+      if (validLat(value) === null) { cellElem.className = 'value-invalid' }
+      elem = value
+      break
+    case 'stop_lon':
+      if (validLon(value) === null) { cellElem.className = 'value-invalid' }
+      elem = value
+      break
+    case 'location_type':
+      if (value === '') {
         elem = value
-        break
-    case "stop_lon":
-        if (validLon(value) === null) { cellElem.className = "value-invalid" }
+      } else if (value === '0') {
+        elem = `${value} (🚏)`
+      } else if (value === '1') {
+        elem = `${value} (🏢)`
+      } else if (value === '2') {
+        elem = `${value} (➡️🚪)`
+      } else {
+        cellElem.className = 'value-invalid'
         elem = value
-        break
-    case "location_type":
-        if (value === "") {
-            elem = value
-        } else if (value === "0") {
-            elem = `${value} (🚏)`
-        } else if (value === "1") {
-            elem = `${value} (🏢)`
-        } else if (value === "2") {
-            elem = `${value} (➡️🚪)`
-        } else {
-            cellElem.className = "value-invalid"
-            elem = value
-        }
-        break
-    case "wheelchair_boarding":
-        if (value === "" || value === "0") {
-            elem = `${value} (♿❓)`
-        } else if (value === "1") {
-            elem = `${value} (♿✔️)`
-        } else if (value === "2") {
-            elem = `${value} (♿❌)`
-        } else {
-            cellElem.className = "value-invalid"
-            elem = value
-        }
-        break
+      }
+      break
+    case 'wheelchair_boarding':
+      if (value === '' || value === '0') {
+        elem = `${value} (♿❓)`
+      } else if (value === '1') {
+        elem = `${value} (♿✔️)`
+      } else if (value === '2') {
+        elem = `${value} (♿❌)`
+      } else {
+        cellElem.className = 'value-invalid'
+        elem = value
+      }
+      break
     default:
-        elem = value
-    }
+      elem = value
+  }
 
-    cellElem.append(elem)
-    return cellElem
+  cellElem.append(elem)
+  return cellElem
 }

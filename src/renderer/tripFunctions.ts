@@ -15,74 +15,75 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+/* eslint-disable @typescript-eslint/no-misused-promises */
 
-import { ipcRenderer } from "electron"
+import { ipcRenderer } from 'electron'
 
-import * as L from "leaflet"
-import "leaflet-extra-markers"
+import * as L from 'leaflet'
+import 'leaflet-extra-markers'
 
-import type * as Gtfs from "../gtfsTypes"
+import type * as Gtfs from '../gtfsTypes'
 
 // Prepare the map object
 export async function createMap (): Promise<L.Map> {
-    const map = L.map("map")
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Tiles &copy; <a href="https://wiki.osmfoundation.org/wiki/Terms_of_Use">OpenStreetMap Foundation</a>',
-        maxZoom: 18
-    }).addTo(map)
+  const map = L.map('map')
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Tiles &copy; <a href="https://wiki.osmfoundation.org/wiki/Terms_of_Use">OpenStreetMap Foundation</a>',
+    maxZoom: 18
+  }).addTo(map)
 
-    return map
+  return map
 }
 
 /**
  * Get a list of keys of a given stop_times row, with added column for stop_name.
  */
 export function rowKeysWithStopName (obj: Gtfs.Row): string[] {
-    const kList = Object.keys(obj)
-    const stopIdIdx = kList.indexOf("stop_id")
+  const kList = Object.keys(obj)
+  const stopIdIdx = kList.indexOf('stop_id')
 
-    if (stopIdIdx >= 0) {
-        kList.splice(stopIdIdx, 0, "_stop_name")
-    }
+  if (stopIdIdx >= 0) {
+    kList.splice(stopIdIdx, 0, '_stop_name')
+  }
 
-    return kList
+  return kList
 }
 
 /**
  * Get a list of [key, value] pairs of a given stop_times row,
  * with added column for stop_name.
  */
-export function rowEntriesWithStopName (obj: Gtfs.Row): [string, string][] {
-    const kvList = Object.entries(obj)
-    const stopIdIdx = kvList.map(i => i[0]).indexOf("stop_id")
+export function rowEntriesWithStopName (obj: Gtfs.Row): Array<[string, string]> {
+  const kvList = Object.entries(obj)
+  const stopIdIdx = kvList.map(i => i[0]).indexOf('stop_id')
 
-    if (stopIdIdx >= 0) {
-        kvList.splice(stopIdIdx, 0, ["_stop_name", ""])
-    }
+  if (stopIdIdx >= 0) {
+    kvList.splice(stopIdIdx, 0, ['_stop_name', ''])
+  }
 
-    return kvList
+  return kvList
 }
 
 /**
  * Creates a nice popup to display current stop on the map
  */
-function getStopPopup (row: Gtfs.Row, stopIdxs: string[]): HTMLSpanElement {
-    const popup = document.createElement("span")
+function getStopPopup (row: Gtfs.Row, stopIndexes: string[]): HTMLSpanElement {
+  const popup = document.createElement('span')
 
-    const linkB = document.createElement("b")
-    const link = document.createElement("a")
-    link.href = `stop.html?id=${encodeURIComponent(row.stop_id)}`
-    link.append("View stop →")
-    linkB.append(link)
-    popup.append(linkB)
-    popup.append(document.createElement("br"))
-    popup.append(`stop_id: ${row.stop_id}`)
-    popup.append(document.createElement("br"))
-    popup.append(`stop_name: ${row.stop_name}`)
-    popup.append(document.createElement("br"))
-    popup.append(`stop_sequence: ${stopIdxs.join(", ")}`)
+  const linkB = document.createElement('b')
+  const link = document.createElement('a')
+  link.href = `stop.html?id=${encodeURIComponent(row.stop_id)}`
+  link.append('View stop →')
+  linkB.append(link)
+  popup.append(linkB)
+  popup.append(document.createElement('br'))
+  popup.append(`stop_id: ${row.stop_id}`)
+  popup.append(document.createElement('br'))
+  popup.append(`stop_name: ${row.stop_name}`)
+  popup.append(document.createElement('br'))
+  popup.append(`stop_sequence: ${stopIndexes.join(', ')}`)
 
-    return popup
+  return popup
 }
 
 /**
@@ -90,53 +91,53 @@ function getStopPopup (row: Gtfs.Row, stopIdxs: string[]): HTMLSpanElement {
  * @param findStopData maps stop_id -> [stop_sequence, stop_sequence, ...]
  * @param map the Leaflet map to add points to
  */
-export async function fetchStopData (findStopData: Map<string, string[]>, map: L.Map) {
-    const mapStops = L.featureGroup()
+export async function fetchStopData (findStopData: Map<string, string[]>, map: L.Map): Promise<void> {
+  const mapStops = L.featureGroup()
 
-    for (const [stopId, stopIdxs] of findStopData) {
-        // Fetch data for this stopId
-        const stopData = await ipcRenderer.invoke("find", "stops", stopId)
+  for (const [stopId, stopIndexes] of findStopData) {
+    // Fetch data for this stopId
+    const stopData = await ipcRenderer.invoke('find', 'stops', stopId)
 
-        // Add stop_name to stop_times rows
-        stopIdxs.forEach(async stopIdx => {
-            const cell = document.getElementById("stop_name_" + stopIdx)
-            if (cell !== null) { cell.append(stopData.stop_name) }
-        })
+    // Add stop_name to stop_times rows
+    stopIndexes.forEach(async stopIdx => {
+      const cell = document.getElementById('stop_name_' + stopIdx)
+      if (cell !== null) { cell.append(stopData.stop_name) }
+    })
 
-        // Create a marker
-        const popup = getStopPopup(stopData, stopIdxs)
-        const icon = L.ExtraMarkers.icon({
-            icon: "fa-number",
-            number: stopIdxs.join("/"),
-            markerColor: "green"
-        })
+    // Create a marker
+    const popup = getStopPopup(stopData, stopIndexes)
+    const icon = L.ExtraMarkers.icon({
+      icon: 'fa-number',
+      number: stopIndexes.join('/'),
+      markerColor: 'green'
+    })
 
-        const stopPos: [number, number] = [parseFloat(stopData.stop_lat), parseFloat(stopData.stop_lon)]
+    const stopPos: [number, number] = [parseFloat(stopData.stop_lat), parseFloat(stopData.stop_lon)]
 
-        const marker = L.marker(stopPos, { icon: icon })
-        marker.bindPopup(popup)
+    const marker = L.marker(stopPos, { icon: icon })
+    marker.bindPopup(popup)
 
-        mapStops.addLayer(marker)
-    }
+    mapStops.addLayer(marker)
+  }
 
-    mapStops.addTo(map)
-    map.fitBounds(mapStops.getBounds())
+  mapStops.addTo(map)
+  map.fitBounds(mapStops.getBounds())
 }
 
 /**
- * Add a line to the map representing the reffered shape_id
+ * Add a line to the map representing the referred shape_id
  */
-export async function fetchShapeData (shapeId: string | undefined | null, map: L.Map) {
-    if (typeof shapeId !== "string") { return }
+export async function fetchShapeData (shapeId: string | undefined | null, map: L.Map): Promise<void> {
+  if (typeof shapeId !== 'string') { return }
 
-    // Load points from shapes.txt
-    const points = await ipcRenderer.invoke("find", "shapes", shapeId) as null | [number, number][]
+  // Load points from shapes.txt
+  const points = await ipcRenderer.invoke('find', 'shapes', shapeId) as null | Array<[number, number]>
 
-    if (points === null) { return }
+  if (points === null) { return }
 
-    // Add points to the map
-    L.polyline(
-        points,
-        { weight: 5 }
-    ).addTo(map)
+  // Add points to the map
+  L.polyline(
+    points,
+    { weight: 5 }
+  ).addTo(map)
 }

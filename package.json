@@ -15,7 +15,7 @@
     },
     "build": {
         "appId": "pl.mkuran.jvig",
-        "copyright": "Copyright © 2020 Mikołaj Kuranowski",
+        "copyright": "Copyright © 2020-2021 Mikołaj Kuranowski",
         "directories": {
             "output": "dist",
             "buildResources": "dist_resources"
@@ -43,12 +43,10 @@
     "devDependencies": {
         "@types/leaflet": "^1.7.4",
         "@types/yauzl": "^2.9.2",
-        "@typescript-eslint/eslint-plugin": "^4.29.1",
-        "@typescript-eslint/parser": "^4.29.1",
         "electron": "^12.0.0",
         "electron-builder": "^22.11.7",
         "rimraf": "^3.0.2",
-        "standardx": "^7.0.0",
+        "ts-standard": "^10.0.0",
         "typescript": "^4.3.5"
     },
     "dependencies": {
@@ -58,35 +56,5 @@
         "leaflet.markercluster": "^1.5.0",
         "p-event": "^4.2.0",
         "yauzl": "^2.10.0"
-    },
-    "eslintConfig": {
-        "rules": {
-            "no-unused-vars": "off",
-            "@typescript-eslint/no-unused-vars": "off",
-            "curly": [
-                "error",
-                "all"
-            ],
-            "quotes": [
-                "error",
-                "double",
-                {
-                    "avoidEscape": true
-                }
-            ],
-            "indent": [
-                "error",
-                4
-            ]
-        }
-    },
-    "standardx": {
-        "parser": "@typescript-eslint/parser",
-        "plugins": [
-            "@typescript-eslint/eslint-plugin"
-        ],
-        "ignore": [
-            "dist/**/*"
-        ]
     }
 }

@@ -1,6 +1,6 @@
 /*
 jvig - GTFS Viewer application written using Typescript & Electron
-Copyright © 2020 Mikołaj Kuranowski
+Copyright © 2020-2021 Mikołaj Kuranowski
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,74 +15,75 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+/* eslint-disable @typescript-eslint/no-misused-promises */
 
-import { ipcRenderer } from "electron"
-import type { IpcRendererEvent } from "electron"
+import { ipcRenderer } from 'electron'
+import type { IpcRendererEvent } from 'electron'
 
-import { NoContentInHtml } from "../errs"
-import { prepareRoutesHeader, prepareRoutesValue } from "../tables/routes"
-import type * as Gtfs from "../gtfsTypes"
+import { NoContentInHtml } from '../errs'
+import { prepareRoutesHeader, prepareRoutesValue } from '../tables/routes'
+import type * as Gtfs from '../gtfsTypes'
 
 export async function init (): Promise<void> {
-    const content = document.getElementById("content")
-    let wroteHeader: boolean = false
+  const content = document.getElementById('content')
+  let wroteHeader: boolean = false
 
-    // Check if content exists
-    if (content === null) {
-        throw new NoContentInHtml("this document has no element with id=content")
+  // Check if content exists
+  if (content === null) {
+    throw new NoContentInHtml('this document has no element with id=content')
+  }
+
+  // Check if we should filter by a specific agency_id
+  const expectedAgency = (new URLSearchParams(window.location.search)).get('agency')
+
+  // Check if routes table exist
+  const exists = await ipcRenderer.invoke('exists', 'routes') as boolean
+
+  if (!exists) {
+    const h3 = document.createElement('h3')
+    h3.className = 'value-error'
+
+    content.append(h3)
+    h3.append('Error! File routes.txt is not present in the GTFS')
+  }
+
+  // Create HTML table
+  const table = document.createElement('table')
+  content.append(table)
+
+  // Add a handler for data
+  ipcRenderer.on('dump-stream-routes', async (event: IpcRendererEvent, ...args: [Gtfs.Row]) => {
+    const row = args[0]
+    if (!wroteHeader) {
+      // Write header, if it wasn't written
+      const headerTr = document.createElement('tr')
+      table.append(headerTr)
+
+      wroteHeader = true
+      const headerElements = ['', ...Object.keys(row)]
+        .map(key => prepareRoutesHeader(key))
+      headerTr.append(...headerElements)
     }
 
-    // Check if we should filter by a specific agency_id
-    const expectedAgency = (new URLSearchParams(window.location.search)).get("agency")
+    // Skip this row if we it doesn't match the expected agency
+    if (expectedAgency !== null && expectedAgency !== row.agency_id) { return }
 
-    // Check if routes table exist
-    const exists = await ipcRenderer.invoke("exists", "routes") as boolean
+    // Write the normal row
+    const tr = document.createElement('tr')
+    table.append(tr)
 
-    if (!exists) {
-        const h3 = document.createElement("h3")
-        h3.className = "value-error"
+    const elements = [['_link_trips', row.route_id], ...Object.entries(row)]
+      .map(([key, value]) => prepareRoutesValue(key, value, row))
 
-        content.append(h3)
-        h3.append("Error! File routes.txt is not present in the GTFS")
-    }
+    // Add all cells to row
+    tr.append(...elements)
+  })
 
-    // Create HTML table
-    const table = document.createElement("table")
-    content.append(table)
+  // Request data
+  await ipcRenderer.invoke('dump-request', 'routes')
 
-    // Add a handler for data
-    ipcRenderer.on("dump-stream-routes", async (event: IpcRendererEvent, ...args: [Gtfs.Row]) => {
-        const row = args[0]
-        if (!wroteHeader) {
-            // Write header, if it wasn't written
-            const headerTr = document.createElement("tr")
-            table.append(headerTr)
-
-            wroteHeader = true
-            const headerElems = ["", ...Object.keys(row)]
-                .map(key => prepareRoutesHeader(key))
-            headerTr.append(...headerElems)
-        }
-
-        // Skip this row if we it doesn't match the expected agency
-        if (expectedAgency !== null && expectedAgency !== row.agency_id) { return }
-
-        // Write the normal row
-        const tr = document.createElement("tr")
-        table.append(tr)
-
-        const elems = [["_link_trips", row.route_id], ...Object.entries(row)]
-            .map(([key, value]) => prepareRoutesValue(key, value, row))
-
-        // Add all cells to row
-        tr.append(...elems)
-    })
-
-    // Request data
-    await ipcRenderer.invoke("dump-request", "routes")
-
-    // Wait a bit after dump-request finishes (had some issues without a timeout)
-    // And remove listener from dump-stream channel
-    await new Promise(resolve => setTimeout(resolve, 50))
-    ipcRenderer.removeAllListeners("dump-stream-routes")
+  // Wait a bit after dump-request finishes (had some issues without a timeout)
+  // And remove listener from dump-stream channel
+  await new Promise(resolve => setTimeout(resolve, 50))
+  ipcRenderer.removeAllListeners('dump-stream-routes')
 }
