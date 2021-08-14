@@ -227,7 +227,7 @@ async function handleDirectory (directoryPath: string): Promise<Gtfs.Obj> {
 async function handleZip (zipPath: string): Promise<Gtfs.Obj> {
     const entryPromises: Promise<void>[] = []
     const gtfsobj: Gtfs.Obj = {}
-    let zip: yauzl.ZipFile
+    let zip: yauzl.ZipFile | undefined
 
     try {
         zip = await (promisify(yauzl.open) as PYauzlOpen)(zipPath, { autoClose: true })
@@ -236,6 +236,10 @@ async function handleZip (zipPath: string): Promise<Gtfs.Obj> {
         throw new InvalidInputFile(
             `Provided file: ${zipPath} doesn't point to ` +
             "a directory or a valid zip archive!")
+    }
+
+    if (zip === undefined) {
+        throw new UnableToExtract(`yauzl was unable to read ZIP file ${zipPath}`)
     }
 
     const openReadStream = promisify(zip.openReadStream.bind(zip))

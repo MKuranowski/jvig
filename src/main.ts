@@ -37,7 +37,8 @@ async function createWindow () {
         height: 720,
         icon: join(__dirname, "..", "icon", "jvig.png"),
         webPreferences: {
-            nodeIntegration: true
+            nodeIntegration: true,
+            contextIsolation: false
         }
     })
 
