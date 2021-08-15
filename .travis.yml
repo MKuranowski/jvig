@@ -1,14 +1,31 @@
+language: node_js
+node_js:
+  - "16"
+
+install:
+  - npm install
+
+script:
+  - npm test
+
+stages:
+  - test
+  - name: deploy
+    if: tag IS PRESENT AND repo = MKuranowski/jvig
+
 jobs:
   include:
   - os: linux
     language: node_js
     node_js: "16"
+    stage: deploy
     env:
       - RELEASE_FILE=dist/jvig-*.AppImage
 
   - os: windows
     language: node_js
     node_js: "16"
+    stage: deploy
     env:
       - RELEASE_FILE=dist/jvig-*-setup.exe
       - HOME=$LOCALAPPDATA
@@ -20,8 +37,6 @@ cache:
     - node_modules
     - $HOME/.cache/electron
     - $HOME/.cache/electron-builder
-
-if: tag =~ /^v/
 
 before_deploy: |
   if [ "$TRAVIS_OS_NAME" == "windows" ]; then
