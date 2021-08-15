@@ -47,8 +47,8 @@
     "devDependencies": {
         "@types/leaflet": "^1.7.4",
         "@types/yauzl": "^2.9.2",
-        "electron": "^12.0.0",
-        "electron-builder": "^22.11.7",
+        "electron": "^13.1.9",
+        "electron-builder": "^22.9.1",
         "rimraf": "^3.0.2",
         "ts-standard": "^10.0.0",
         "typescript": "^4.3.5"
