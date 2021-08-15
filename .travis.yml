@@ -2,12 +2,6 @@ language: node_js
 node_js:
   - "16"
 
-install:
-  - npm install
-
-script:
-  - npm test
-
 stages:
   - test
   - name: deploy
@@ -15,6 +9,11 @@ stages:
 
 jobs:
   include:
+  - os: linux
+    stage: test
+    install: npm install
+    script: npm test
+
   - os: linux
     language: node_js
     node_js: "16"
