@@ -12,7 +12,8 @@
         "start:win32": "npm run build:win32 && electron ./build/main.js",
         "dist": "npm run build && electron-builder --linux",
         "dist:win32": "npm run build:win32 && electron-builder --windows",
-        "dist:darwin": "npm run build:win32 && electron-builder --macos"
+        "dist:darwin": "npm run build:win32 && electron-builder --macos",
+        "test": "ava"
     },
     "build": {
         "appId": "pl.mkuran.jvig",
@@ -47,9 +48,11 @@
     "devDependencies": {
         "@types/leaflet": "^1.7.4",
         "@types/yauzl": "^2.9.2",
+        "ava": "^3.15.0",
         "electron": "^13.1.9",
         "electron-builder": "^22.9.1",
         "rimraf": "^3.0.2",
+        "ts-node": "^10.2.0",
         "ts-standard": "^10.0.0",
         "typescript": "^4.3.5"
     },
@@ -60,5 +63,9 @@
         "leaflet.markercluster": "^1.5.0",
         "p-event": "^4.2.0",
         "yauzl": "^2.10.0"
+    },
+    "ava": {
+        "extensions": ["ts"],
+        "require": ["ts-node/register"]
     }
 }

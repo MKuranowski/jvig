@@ -16,16 +16,22 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+const numberPattern = /^-?[0-9]+(\.[0-9]+)?$/
+const datePattern = /^[0-9]{8}$/
+const timePattern = /^([0-9]{1,2}):([0-9]{2}):([0-9]{2})$/
+const colorPattern = /^[0-9A-Fa-f]{6}$/
+
 /**
  * Checks if given latitude can exist
  * @param latS latitude in a string
  */
 export function validLat (latS: undefined | string): null | number {
   if (latS === undefined) { return null }
+  if (!numberPattern.test(latS)) { return null }
 
   const latN = parseFloat(latS)
 
-  if (isNaN(latN) || Math.abs(latN) > 90) { return null }
+  if (isNaN(latN) || latN > 90 || latN < -90) { return null }
 
   return latN
 }
@@ -36,9 +42,11 @@ export function validLat (latS: undefined | string): null | number {
  */
 export function validLon (lonS: undefined | string): null | number {
   if (lonS === undefined) { return null }
+  if (!numberPattern.test(lonS)) { return null }
+
   const lonN = parseFloat(lonS)
 
-  if (isNaN(lonN) || Math.abs(lonN) > 180) { return null }
+  if (isNaN(lonN) || lonN > 180 || lonN < -180) { return null }
   return lonN
 }
 
@@ -47,7 +55,7 @@ export function validLon (lonS: undefined | string): null | number {
  * @param dateString YYYYMMDD date representation
  */
 export function validDate (dateString: string): boolean {
-  if (dateString.length !== 8) { return false }
+  if (!datePattern.test(dateString)) { return false }
 
   const year = parseInt(dateString.slice(0, 4))
   const monthIdx = parseInt(dateString.slice(4, 6)) - 1
@@ -71,7 +79,7 @@ export function validDate (dateString: string): boolean {
  */
 export function validTime (timeS: string): boolean {
   // Only HH:MM:SS or H:MM:SS are valid
-  const timeM = timeS.match(/^(\d{1,2}):(\d\d):(\d\d)$/)
+  const timeM = timePattern.exec(timeS)
 
   if (timeM === null) { return false }
 
@@ -101,7 +109,7 @@ export function timeToInt (timeS: string): number {
 export function safeColor (value: string | undefined): string | null {
   if (value === undefined) {
     return null
-  } else if (/^[0-9A-Fa-f]{6}$/.test(value)) {
+  } else if (colorPattern.test(value)) {
     return '#' + value.toUpperCase()
   } else {
     return null
