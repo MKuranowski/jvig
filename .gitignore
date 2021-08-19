@@ -5,3 +5,4 @@ node_modules
 icon/bus.svg
 icon/crane.svg
 *.zip
+!src/test/fixture/**/*.zip
