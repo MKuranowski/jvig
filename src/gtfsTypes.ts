@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 type MapValue<T> = T extends Map<any, infer V> ? V : never
 
-export interface Row { [key: string]: string }
+export type Row = Record<string, string>
 
 export type FileToRow = Map<string, Row>
 export type FileToList = Map<string, Row[]>
@@ -39,3 +39,13 @@ export interface Obj {
 }
 
 export type PossibleValues = MapValue<Obj[keyof Obj]>
+
+type LoadingStatusStates = 'nofile' | 'error' | 'loading' | 'done'
+type LoadingStatusTableState = 'error' | 'loading' | 'done'
+
+export interface LoadingStatus {
+  status: LoadingStatusStates
+  fileName: string | null
+  tables?: Map<string, LoadingStatusTableState>
+  error?: Error
+}

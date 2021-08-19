@@ -65,7 +65,11 @@
         "yauzl": "^2.10.0"
     },
     "ava": {
-        "extensions": ["ts"],
-        "require": ["ts-node/register"]
+        "extensions": [
+            "ts"
+        ],
+        "require": [
+            "ts-node/register"
+        ]
     }
 }

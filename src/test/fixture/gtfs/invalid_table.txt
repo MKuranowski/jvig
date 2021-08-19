@@ -1,0 +1,4 @@
+constant,value
+pi,3.1416
+e,2.7183
+sqrt2,1.4142

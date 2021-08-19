@@ -19,4 +19,4 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 export class InvalidInputFile extends Error {}
 export class UnableToExtract extends Error {}
 export class NoContentInHtml extends Error {}
-export class NoPrimaryColumn extends Error {}
+export class NoColumn extends Error {}

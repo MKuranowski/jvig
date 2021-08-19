@@ -21,7 +21,7 @@ import { ipcRenderer } from 'electron'
 import type { IpcRendererEvent } from 'electron'
 
 import { NoContentInHtml } from '../errs'
-import type { LoadingStatus } from '../gtfs'
+import type { LoadingStatus } from '../gtfsTypes'
 
 async function onNewStatus (event: IpcRendererEvent, newStatus: LoadingStatus): Promise<void> {
   const content = document.getElementById('content') as (HTMLDivElement | null)

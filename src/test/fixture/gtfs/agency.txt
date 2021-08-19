@@ -1,0 +1,3 @@
+﻿agency_id,agency_name,agency_timezone,agency_url
+1,Example Busses,Etc/UTC,"https://example.com"
+2,Example Trams,Etc/UTC,"https://example.com"
