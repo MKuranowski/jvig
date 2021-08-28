@@ -10,7 +10,7 @@ I also came up with a crappy backronym for jvig: Javascript Visulaizer of GTFS I
 
 jvig is still work-in-progress, but **it works**.
 
-Currently, only AppImages for GNU/Linux systems are provided.
+Currently, only AppImages and Windows NSIS installers are provided (all for x86_64).
 
 
 Usage
@@ -48,13 +48,12 @@ Features/Todos
 | App Improvement       | Done? |
 |-----------------------|----|
 | search                | ❌ |
-| improve snappiness    | ❌ |
-| verify dark mode      | ❌ |
-| add file-picker if no file was provided | ❌ |
+| single-page site      | ❌ |
+| verify dark mode      | ✔️ |
+| add file-picker if no file was provided | ✔️ (0.2.0) |
 | better loading screen | ✔️ (0.1.5) |
 | Windows release       | ✔️ (0.1.5) |
 | macOS release         | ❌ (don't have a mac to test things) |
-| auto-HTML generator   | ❌ |
 
 
 License
