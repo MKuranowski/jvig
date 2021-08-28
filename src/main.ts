@@ -23,7 +23,7 @@ import type { IpcMainInvokeEvent } from 'electron'
 import { join as path_join } from 'path'
 
 import { GtfsLoader } from './gtfsLoader'
-import { menuTemplate } from './appMenu'
+import { prepareMenu } from './appMenu'
 import type * as Gtfs from './gtfsTypes'
 
 // Crash on unhandled promise rejections
@@ -40,8 +40,9 @@ class JvigApp {
    * Only then can we create windows, all APIs are populated and all that kind of jazz.
    */
   async onReady (): Promise<void> {
-    // @ts-expect-error
-    Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate))
+    Menu.setApplicationMenu(
+      prepareMenu(async (f: string) => await this.handleOpenFile(null, f), this.window)
+    )
     await this.makeWindow()
     const hasFile = await this.loadGtfs()
     if (hasFile) {
@@ -86,8 +87,9 @@ class JvigApp {
   /**
    * Tries to load a GTFS file from provided arguments
    */
-  async loadGtfs (): Promise<boolean> {
-    const inFile = app.isPackaged ? process.argv[1] : process.argv[2]
+  async loadGtfs (inFile?: string): Promise<boolean> {
+    // If no file is provided via arguments try to get the filename from CLI arguments
+    inFile ??= app.isPackaged ? process.argv[1] : process.argv[2]
 
     if (inFile === undefined) {
       // FIXME: This seems racey, what if the renderer is displaying a different page?
@@ -132,19 +134,20 @@ class JvigApp {
    *     returns: status object
    *
    * "loading-status-req"
-   *     ! only when a GTFS is loaded
+   *     ! only when a GTFS is loaded !
    *     returns: --
    *     side-effect: force a loading-status message
    *
+   * "open-file", args: [filePath]
+   *     returns: --
+   *     side-effect: navigates to loading.html and causes a GTFS reload
    */
 
-  handleExists (_event: IpcMainInvokeEvent, ...args: [keyof Gtfs.Obj]): boolean {
-    const tableName = args[0]
+  handleExists (_event: IpcMainInvokeEvent, tableName: keyof Gtfs.Obj): boolean {
     return this.gtfs?.[tableName] !== undefined
   }
 
-  handleDumpRequest (_event: IpcMainInvokeEvent, ...args: [Exclude<keyof Gtfs.Obj, 'shapes'>]): 'done' {
-    const tableName = args[0]
+  handleDumpRequest (_event: IpcMainInvokeEvent, tableName: Exclude<keyof Gtfs.Obj, 'shapes'>): 'done' {
     const tableMap = this.gtfs?.[tableName]
     const dumpChannel = 'dump-stream-' + tableName
 
@@ -157,13 +160,21 @@ class JvigApp {
     return 'done'
   }
 
-  handleFind (_event: IpcMainInvokeEvent, ...args: [keyof Gtfs.Obj, string]): null | Gtfs.PossibleValues {
-    const [tableName, primaryValue] = args
+  handleFind (_event: IpcMainInvokeEvent, tableName: keyof Gtfs.Obj, primaryValue: string): null | Gtfs.PossibleValues {
     return this.gtfs?.[tableName]?.get(primaryValue) ?? null
   }
 
-  handleLoadingStatusReq (_event: IpcMainInvokeEvent, ...args: any[]): void {
+  handleLoadingStatusReq (_event: IpcMainInvokeEvent): void {
     if (this.loader !== undefined) this.loader.sendStatus()
+  }
+
+  async handleOpenFile (_event: IpcMainInvokeEvent | null, file: string): Promise<void> {
+    this.gtfs = undefined
+    await this.window!.loadFile(path_join(__dirname, '..', 'www', 'loading.html'))
+    const success = await this.loadGtfs(file)
+    if (success) {
+      await this.window!.loadFile(path_join(__dirname, '..', 'www', 'agency.html'))
+    }
   }
 }
 
@@ -176,3 +187,4 @@ ipcMain.handle('loading-status-req', jvig.handleLoadingStatusReq.bind(jvig))
 ipcMain.handle('exists', jvig.handleExists.bind(jvig))
 ipcMain.handle('dump-request', jvig.handleDumpRequest.bind(jvig))
 ipcMain.handle('find', jvig.handleFind.bind(jvig))
+ipcMain.handle('open-file', jvig.handleOpenFile.bind(jvig))
