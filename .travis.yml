@@ -13,8 +13,8 @@ jobs:
     stage: test
     install: npm install
     script: npm test
-    before_deploy: skip
-    deploy: skip
+    before_deploy: 'true'
+    deploy: 'true'
 
   - os: linux
     language: node_js
