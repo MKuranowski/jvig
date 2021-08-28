@@ -47,5 +47,5 @@ export interface LoadingStatus {
   status: LoadingStatusStates
   fileName: string | null
   tables?: Map<string, LoadingStatusTableState>
-  error?: Error
+  error?: any
 }
