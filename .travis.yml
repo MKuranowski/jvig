@@ -1,6 +1,6 @@
 language: node_js
 node_js:
-  - "16"
+  - "17"
 
 stages:
   - test
@@ -16,7 +16,7 @@ jobs:
 
   - os: linux
     language: node_js
-    node_js: "16"
+    node_js: "17"
     stage: deploy
     install: npm install
     before_deploy: npm run dist
@@ -31,7 +31,7 @@ jobs:
 
   - os: windows
     language: node_js
-    node_js: "16"
+    node_js: "17"
     stage: deploy
     env:
       - HOME=$LOCALAPPDATA
