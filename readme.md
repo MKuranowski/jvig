@@ -1,59 +1,46 @@
-⚠️ It's a test project for me to learn Electron and Typescript. Shitty code ahead!
-
 <img src="icon/jvig.svg" alt="logo" width="128" />  
 
 jvig
 ====
 
-Pronounced d͡ʑvʲik (from 🇵🇱dźwig), it's a GTFS Viewer, created using Electron.  
-I also came up with a crappy backronym for jvig: Javascript Visulaizer of GTFS Information.
+Pronounced d͡ʑvʲik (from 🇵🇱dźwig), it's a GTFS Viewer, created using Flask.
 
 jvig is still work-in-progress, but **it works**.
-
-Currently, only AppImages and Windows NSIS installers are provided (all for x86_64).
 
 
 Usage
 -----
 
 ```
-./path/to/jvig_executable ./path/to/gtfs
+python3 -m jvig /path/to/gtfs.zip
 ```
 
 jvig can open both folders and ZIP archives.
-
-You can add the executable to Open With menu of your operating system.  
-Dragging a file/folder to the icon on Windows should also work.
-
 
 
 Features/Todos
 --------------
 
-| GTFS Table         | Viewable? |
-|--------------------|-------|
-| agencies           | ✔️     |
-| stops              | ✔️     |
-| routes             | ✔️     |
-| trips              | ✔️     |
-| frequencies        | ✔️     |
-| calendars          | ✔️     |
-| fares              | ❌    |
-| transfers          | ❌    |
-| pathways           | ❌    |
-| feed_info          | ❌    |
-| attributions       | ❌    |
-| translations       | ❌    |
+#### Viewing GTFS tables
 
-| App Improvement       | Done? |
-|-----------------------|----|
-| search                | ❌ |
-| single-page site      | ❌ |
-| verify dark mode      | ✔️ |
-| add file-picker if no file was provided | ✔️ (0.2.0) |
-| better loading screen | ✔️ (0.1.5) |
-| Windows release       | ✔️ (0.1.5) |
-| macOS release         | ❌ (don't have a mac to test things) |
+- [ ] agencies
+- [ ] stops
+- [ ] routes
+- [ ] trips
+- [ ] frequencies
+- [ ] calendars
+- [ ] fares
+- [ ] transfers
+- [ ] pathways
+- [ ] feed_info
+- [ ] attributions
+- [ ] translations
+
+#### Other improvements
+- [x] search (provided by the browser)
+- [x] verify dark mode
+- [ ] file-picker if no file was provided
+- [ ] better loading screen
 
 
 License
