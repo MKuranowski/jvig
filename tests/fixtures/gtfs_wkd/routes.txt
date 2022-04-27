@@ -1,0 +1,3 @@
+agency_id,route_id,route_short_name,route_long_name,route_type,route_color,route_text_color
+0,A1,A1,Warszawa Śródmieście WKD — Grodzisk Mazowiecki Radońska / ← Milanówek Grudów,2,990099,FFFFFF
+0,A12,A12,Warszawa Śródmieście WKD → Milanówek Grudów,2,990099,FFFFFF

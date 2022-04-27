@@ -1,0 +1,29 @@
+stop_id,stop_name,stop_lat,stop_lon,wheelchair_boarding
+wsrod,Warszawa Śródmieście WKD,52.22768605033,21.00040372159,2
+wocho,Warszawa Ochota WKD,52.2254204,20.9896052,2
+wzach,Warszawa Zachodnia WKD,52.2194428,20.9655565,2
+wreor,Warszawa Reduta Ordona,52.2143846,20.9479076,1
+walje,Warszawa Aleje Jerozolimskie,52.2053252,20.9422535,1
+wrako,Warszawa Raków,52.1944620,20.9358376,2
+wsalo,Warszawa Salomea,52.1865168,20.9246206,1
+opacz,Opacz,52.1813825,20.9046328,1
+micha,Michałowice,52.1753726,20.8812869,1
+regul,Reguły,52.1704016,20.8590621,1
+malic,Malichy,52.1693915,20.8411556,1
+twork,Tworki,52.1690033,20.8232948,1
+prusz,Pruszków WKD,52.1616392,20.8166108,1
+komor,Komorów,52.1481518,20.8113778,1
+nwwar,Nowa Wieś Warszawska,52.1404979,20.7956386,1
+kanie,Kanie Helenowskie,52.1316424,20.7742801,1
+otreb,Otrębusy,52.1263816,20.7615852,1
+plwsc,Podkowa Leśna Wschodnia,52.1237864,20.7384324,1
+plglo,Podkowa Leśna Główna,52.1223734,20.7251796,1
+plzac,Podkowa Leśna Zachodnia,52.1207776,20.7116318,1
+poles,Polesie,52.121852,20.697222,1
+milgr,Milanówek Grudów,52.12226923002,20.6822946245,1
+kazim,Kazimierówka,52.1110880,20.6983763,1
+brzoz,Brzózki,52.1048841,20.6776750,1
+gmokr,Grodzisk Mazowiecki Okrężna,52.1006961,20.6601977,1
+gmpia,Grodzisk Mazowiecki Piaskowa,52.1025545,20.6515664,1
+gmjor,Grodzisk Mazowiecki Jordanowice,52.1030389,20.6360364,1
+gmrad,Grodzisk Mazowiecki Radońska,52.1006450,20.6284350,1
