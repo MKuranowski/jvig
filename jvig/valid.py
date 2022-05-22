@@ -9,7 +9,7 @@ DECIMAL_PATTERN = re.compile(r"^-?[0-9]+(?:\.[0-9]+)?$")
 
 
 def color(text: str) -> bool:
-    return not color or COLOR_PATTERN.match(text) is not None
+    return not text or COLOR_PATTERN.match(text) is not None
 
 
 def latitude(text: str) -> Optional[float]:
