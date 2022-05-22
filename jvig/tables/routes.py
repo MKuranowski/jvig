@@ -29,10 +29,10 @@ def header_class(field: str) -> str:
     return "" if field in VALID_FIELDS else "value-unrecognized"
 
 
-def format_row(row: dict[str, str], field: str) -> str:
+def format_cell(row: dict[str, str], field: str) -> str:
     value = row[field]
 
-    if field in ("route_color", "route_text_color"):
+    if field in {"route_color", "route_text_color"}:
         if _is_valid_color(value):
             return f"<td>{escape(value)}</td>"
         else:

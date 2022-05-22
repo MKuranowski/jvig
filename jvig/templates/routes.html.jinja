@@ -47,7 +47,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           <tr>
             <td><a href="/route/{{ row.route_id | urlencode }}">Route trips →</a></td>
             {% for field in header %}
-              {{ route_format_row(row, field) }}
+              {{ routes_format_cell(row, field) }}
             {% endfor %}
           </tr>
         {% endfor %}

@@ -21,7 +21,7 @@ app = Flask(__name__)
 # Apply template filters
 app.jinja_env.globals["agency_header_class"] = agency.header_class
 app.jinja_env.globals["routes_header_class"] = routes.header_class
-app.jinja_env.globals["route_format_row"] = routes.format_row
+app.jinja_env.globals["routes_format_cell"] = routes.format_cell
 
 
 # Apply routes
