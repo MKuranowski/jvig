@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<!--
+jvig - GTFS Viewer application written using Typescript & Electron
+Copyright © 2020-2022 Mikołaj Kuranowski
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>jvig</title>
+    <link rel="stylesheet" href="/static/style.css" />
+
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+        integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+        crossorigin="anonymous" />
+    <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+        integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+        crossorigin="anonymous"></script>
+
+    <!-- Leaflet.markercluster -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+        integrity="sha512-mQ77VzAakzdpWdgfL/lM1ksNy89uFgibRQANsNneSTMD/bj0Y/8+94XMwYhnbzx8eki2hrbPpDm0vD0CiT2lcg=="
+        crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+        integrity="sha512-6ZCLMiYwTeli2rVh3XAPxy3YoR5fVxGdH/pz+KMCzRY2M65Emgkw00Yqmhh8qLGeYQ3LbVZGdmOX9KUjSKr0TA=="
+        crossorigin="anonymous" />
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"
+        integrity="sha512-OFs3W4DIZ5ZkrDhBFtsCP6JXtMEDGmhl0QPlmWYBJay40TT1n3gt2Xuw8Pf/iezgW9CdabjkNChRqozl/YADmg=="
+        crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <div class="header" id="header"><h2>
+      <a href="/agency">Agencies</a>
+      | <a href="/routes">Routes</a>
+      | <a href="/stops">Stops</a>
+      | <a href="/calendars">Calendars</a>
+    </h2></div>
+    <div class="map" id="map"></div>
+    <hr>
+    <div id="content">
+    {% if missing %}
+        <h3 class="value-error">Error! File stops.txt is not present in the GTFS</h3>
+    {% else %}
+      <table>
+      <tr>
+        <th></th>
+        {% for field in header %}
+          <th class="{{ stops_header_class(field) }}">
+          {{ field | e }}
+          </th>
+        {% endfor %}
+      </tr>
+      {% for row in data %}
+        <tr>
+        <td><a href="/stop/{{ row.stop_id | urlencode }}">Stop departures →</a></td>
+        {% for field in header %}
+          {{ stops_format_cell(row, field) }}
+        {% endfor %}
+        </tr>
+      {% endfor %}
+      </table>
+    {% endif %}
+    </div>
+  </body>
+  <script>
+    "use strict";
+    // Create the map
+    const map = L.map('map');
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Tiles &copy; <a href="https://wiki.osmfoundation.org/wiki/Terms_of_Use">OpenStreetMap Foundation</a>',
+        maxZoom: 18
+    }).addTo(map);
+    const markers = L.markerClusterGroup().addTo(map);
+
+    // Fetch marker data & add them to the map
+    fetch("/api/map/stops")
+      .then(r => r.json())
+      .then(stops => stops.forEach(stop => {
+        // Parse stop position
+        let lat = parseFloat(stop.lat);
+        let lon = parseFloat(stop.lon);
+        if (isNaN(lat) || isNaN(lon)) return;
+
+        // Crate the popup
+        // 1. Add a link to stop view
+        const popup = document.createElement("span");
+        const boldAnchor = document.createElement("b");
+        const anchor = document.createElement("a");
+        anchor.href = `/stop/${encodeURIComponent(stop.id)}`;
+        anchor.append("Stop departures →");
+        boldAnchor.append(anchor)
+        popup.append(boldAnchor, document.createElement("br"));
+
+        // 2. Add stop_id to popup
+        popup.append(`stop_id: ${stop.id}`, document.createElement("br"));
+
+        // 3. Add stop_code to popup
+        if (stop.code) {
+          popup.append(`stop_code: ${stop.code}`, document.createElement("br"))
+        }
+
+        // 4. Add stop_name to popup
+        popup.append(`stop_name: ${stop.name}`)
+
+        // Create leaflet marker
+        const m = L.marker([lat, lon]);
+        m.bindPopup(popup);
+        m.addTo(markers);
+      }))
+      .then(() => map.fitBounds(markers.getBounds()));
+  </script>
+</html>
