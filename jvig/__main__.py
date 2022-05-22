@@ -6,7 +6,7 @@ from flask import Flask, jsonify, render_template
 from flask.wrappers import Response
 
 from .gtfs import Gtfs
-from .tables import agency, routes, stops
+from .tables import agency, routes, stops, trips
 
 # Parse the argument
 arg_parser = argparse.ArgumentParser()
@@ -25,6 +25,13 @@ app.jinja_env.globals["routes_header_class"] = routes.header_class
 app.jinja_env.globals["routes_format_cell"] = routes.format_cell
 app.jinja_env.globals["stops_header_class"] = stops.header_class
 app.jinja_env.globals["stops_format_cell"] = stops.format_cell
+app.jinja_env.globals["trips_header_class"] = trips.header_class
+app.jinja_env.globals["trips_format_cell"] = trips.format_cell
+
+app.jinja_env.globals["trip_first_time"] = lambda trip_id: \
+    gtfs.stop_times[trip_id][0]["departure_time"]
+app.jinja_env.globals["trip_last_time"] = lambda trip_id: \
+    gtfs.stop_times[trip_id][-1]["departure_time"]
 
 
 # HTML routes
@@ -63,6 +70,24 @@ def route_stops() -> str:
         missing=not gtfs.stops,
         header=gtfs.header_of("stops"),
         data=gtfs.stops.values(),
+    )
+
+
+@app.route("/route/<path:route_id>")
+@app.route("/block/<path:block_id>")
+def route_trips(route_id: Optional[str] = None, block_id: Optional[str] = None) -> str:
+    if route_id:
+        data = filter(lambda row: row["route_id"] == route_id, gtfs.trips.values())
+    elif block_id:
+        data = filter(lambda row: row["block_id"] == route_id, gtfs.trips.values())
+    else:
+        raise RuntimeError("Trips view must be filtered by either a block_id or route_id")
+
+    return render_template(
+        "trips.html.jinja",
+        missing=not gtfs.trips,
+        header=gtfs.header_of("trips"),
+        data=data,
     )
 
 

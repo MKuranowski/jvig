@@ -106,6 +106,8 @@ class Gtfs:
     def load_stop_times(self, table_name: str, stream: IO[str]) -> None:
         """Specialized loader for stop_times.txt, which loads the data
         into self.stop_times and self.stop_times_by_stops."""
+        # FIXME: Sort by stop_sequence
+
         assert table_name == "stop_times"
         self.stop_times.clear()
         self.stop_times_by_stops.clear()
