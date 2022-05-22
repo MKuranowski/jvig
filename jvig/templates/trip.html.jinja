@@ -60,88 +60,87 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <div class="map" id="map"></div>
     <hr>
     <div id="content">
-      {# stops table #}
-      <div>
-        {% if missing_stop %}
-          <h3 class="value-error">Error! Stop {{ stop.stop_id | e }} doesn't exist</h3>
-        {% else %}
-          <h5>Stop data</h5>
-          <table>
-            <tr>
-              <th></th>
-              <th></th>
-              {% for field in stops_header %}
-                <th class="{{ stops_header_class(field) }}">
-                {{ field | e }}
-                </th>
-              {% endfor %}
-            </tr>
-            {% for row in stops_in_group %}
+      {% if missing %}
+        <h3 class="value-error">Error! Trip {{ trip.trip_id | e }} doesn't exist</h3>
+      {% else %}
+
+        {# trip info #}
+        <div>
+            <h5>Trip data</h5>
+            <table>
               <tr>
-                {% if loop.first %}
-                  <td colspan="2">0</td>
-                {% else %}
-                  <td>{{ loop.index0 }}</td>
-                  <td><a href="/stop/{{ row.stop_id | urlencode }}">Stop departures →</a></td>
-                {% endif %}
-                {% for field in stops_header %}
-                  {{ stops_format_cell(row, field) }}
+                {% for field in trips_header %}
+                  <th class="{{ trips_header_class(field) }}">{{ field | e }}</th>
                 {% endfor %}
               </tr>
-            {% endfor %}
-          </table>
-        {% endif %}
-      </div>
+                <tr>
+                  {% for field in trips_header %}
+                    {{ trips_format_cell(trip, field) }}
+                  {% endfor %}
+                </tr>
+            </table>
+        </div>
 
-      {# stop_times table #}
-      <hr />
-      <div>
-        {% if not times_by_service %}
-          <h5 class="value-unrecognized">No stop times at this stop</h3>
-        {% else %}
-          <h5>Stop Times</h5>
-          <table>
-            <tr>
-              {% for field in times_header %}
-                <th class="{{ times_header_class(field) }}">
-                  {{ field | e }}
-                </th>
-              {% endfor %}
-              {% if trip_short_names %}
-                <th class="value-inherited">trip_short_name</th>
-              {% endif %}
-              {% if trip_headsigns %}
-                <th class="value-inherited">trip_headsign</th>
-              {% endif %}
-            </tr>
-            {% for service_id, times in times_by_service.items() %}
+        {# stop_times table #}
+        <hr>
+        <div>
+          {% if not times %}
+            <h5 class="value-error">Trip has no stop_times</h3>
+          {% else %}
+            <h5>Stop Times</h5>
+            <table>
               <tr>
-                <td colspan="{{ times_colspan }}" class="align-center">service_id: {{ service_id | e }}</td>
+                {% for field in times_header %}
+                  <th class="{{ times_header_class(field) }}">
+                    {{ field | e }}
+                  </th>
+                {% endfor %}
+                <th class="value-inherited">stop_name</th>
               </tr>
               {% for row in times %}
                 <tr>
                   {% for field in times_header %}
                     {{ times_format_cell(row, field) }}
                   {% endfor %}
-                  {% if trip_short_names %}
-                    <td>{{ trip_short_names[row.trip_id] }}</td>
-                  {% endif %}
-                  {% if trip_headsigns %}
-                    <td>{{ trip_headsigns[row.trip_id] }}</td>
-                  {% endif %}
+                  <td>{{ stop_names[loop.index0] }}</td>
                 </tr>
               {% endfor %}
-            {% endfor %}
-          </table>
+            </table>
+          {% endif %}
+        </div>
+
+        {# frequencies table #}
+        {% if frequencies %}
+          <hr />
+          <div>
+            <h5>Frequencies</h5>
+            <table>
+              <tr>
+                {% for field in frequencies_header %}
+                  <th class="{{ frequencies_header_class(field) }}">
+                    {{ field | e }}
+                  </th>
+                {% endfor %}
+              </tr>
+              {% for row in frequencies %}
+                <tr>
+                  {% for field in frequencies_header %}
+                    {{ frequencies_format_cell(row, field) }}
+                  {% endfor %}
+                </tr>
+              {% endfor %}
+            </table>
+          </div>
         {% endif %}
-      </div>
+      {% endif %}
     </div>
   </body>
   <script>
     "use strict";
     // TODO: Actually investigate whether Python string literals
     //       can be interpreted as JS string literals without something breaking
-    const stop_id = {{ to_js_literal(stop.stop_id) }};
+    const trip_id = {{ to_js_literal(trip.trip_id) }};
+    const shape_id = {{ to_js_literal(trip.shape_id) }};
 
     // Create the map
     const map = L.map('map');
@@ -149,10 +148,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Tiles &copy; <a href="https://wiki.osmfoundation.org/wiki/Terms_of_Use">OpenStreetMap Foundation</a>',
         maxZoom: 18
     }).addTo(map);
-    const markers = L.markerClusterGroup().addTo(map);
+    const markers = L.featureGroup().addTo(map);
 
-    // Fetch marker data & add them to the map
-    fetch(`/api/map/stop/${encodeURIComponent(stop_id)}`)
+    // Fetch stop data & add them to the map
+    fetch(`/api/map/trip/${encodeURIComponent(trip_id)}`)
       .then(r => r.json())
       .then(stops => stops.forEach(stop => {
         // Parse stop position
@@ -166,31 +165,36 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         const boldAnchor = document.createElement("b");
         const anchor = document.createElement("a");
         anchor.href = `/stop/${encodeURIComponent(stop.id)}`;
-        anchor.append("Stop departures →");
+        anchor.append("View stop →");
         boldAnchor.append(anchor)
         popup.append(boldAnchor, document.createElement("br"));
 
         // 2. Add stop_id to popup
         popup.append(`stop_id: ${stop.id}`, document.createElement("br"));
 
-        // 3. Add stop_code to popup
-        if (stop.code) {
-          popup.append(`stop_code: ${stop.code}`, document.createElement("br"))
-        }
+        // 3. Add stop_name to popup
+        popup.append(`stop_name: ${stop.name}`, document.createElement("br"))
 
-        // 4. Add stop_name to popup
-        popup.append(`stop_name: ${stop.name}`)
+        // 4. Add stop_sequence to popup
+        popup.append(`stop_sequence: ${stop.seq.join(", ")}`);
 
         // Create leaflet marker
         const icon = L.ExtraMarkers.icon({
           icon: "fa-number",
-          number: stop.idx.toString(),
-          markerColor: stop.idx === 0 ? "green" : "red",
+          number: stop.seq.join("/"),
+          markerColor: "blue",
         });
         const m = L.marker([lat, lon], { icon: icon });
         m.bindPopup(popup);
         m.addTo(markers);
       }))
       .then(() => map.fitBounds(markers.getBounds()));
+
+      // Fetch the shape and also show it
+      if (shape_id) {
+        fetch(`/api/map/shape/${encodeURIComponent(shape_id)}`)
+          .then(r => r.json())
+          .then(points => L.polyline(points, { weight: 5 }).addTo(map));
+      }
   </script>
 </html>

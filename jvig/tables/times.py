@@ -19,7 +19,7 @@ def format_cell(row: dict[str, str], field: str) -> str:
     if field == "trip_id":
         return f'<td><a href="/trip/{quote_plus(value)}">{escape(value)}</a></td>'
 
-    if field in {"arrival_time", "departure_time"}:
+    elif field in {"arrival_time", "departure_time"}:
         if valid.time(value):
             return f"<td>{escape(value)}</td>"
         else:

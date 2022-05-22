@@ -1,14 +1,14 @@
 import argparse
 from bisect import insort
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from flask import Flask, jsonify, render_template
 from flask.wrappers import Response
 
 from .gtfs import Gtfs, Row
-from .tables import agency, routes, stops, times, trips
-from .util import time_to_int
+from .tables import agency, frequencies, routes, stops, times, trips
+from .util import sequence_to_int, time_to_int, to_js_literal
 
 # Parse the argument
 arg_parser = argparse.ArgumentParser()
@@ -31,9 +31,11 @@ app.jinja_env.globals["trips_header_class"] = trips.header_class
 app.jinja_env.globals["trips_format_cell"] = trips.format_cell
 app.jinja_env.globals["times_header_class"] = times.header_class
 app.jinja_env.globals["times_format_cell"] = times.format_cell
+app.jinja_env.globals["frequencies_header_class"] = frequencies.header_class
+app.jinja_env.globals["frequencies_format_cell"] = frequencies.format_cell
 
 # Helper functions
-app.jinja_env.globals["repr"] = lambda x: repr(x)
+app.jinja_env.globals["to_js_literal"] = to_js_literal
 app.jinja_env.globals["trip_first_time"] = lambda trip_id: \
     gtfs.stop_times[trip_id][0]["departure_time"]
 app.jinja_env.globals["trip_last_time"] = lambda trip_id: \
@@ -154,6 +156,41 @@ def route_stop(stop_id: str) -> str:
     )
 
 
+@app.route("/trip/<path:trip_id>")
+def route_trip(trip_id: str) -> str:
+    # Short circuit for missing trips
+    if trip_id not in gtfs.trips:
+        return render_template(
+            "trip.html.jinja",
+            missing=True,
+            trip={"trip_id": trip_id},
+        )
+
+    # Prepare data for rendering
+    trip = gtfs.trips[trip_id]
+    times = sorted(
+        gtfs.stop_times.get(trip_id, []),
+        key=lambda r: sequence_to_int(r.get("stop_sequence", ""))
+    )
+
+    stop_names = [
+        gtfs.stops.get(i.get("stop_id", ""), {}).get("stop_name", "")
+        for i in times
+    ]
+
+    return render_template(
+        "trip.html.jinja",
+        missing=False,
+        trip=trip,
+        trips_header=gtfs.header_of("trips"),
+        times=times,
+        times_header=gtfs.header_of("stop_times"),
+        stop_names=stop_names,
+        frequencies=gtfs.frequencies.get(trip_id),
+        frequencies_header=gtfs.header_of("frequencies"),
+    )
+
+
 # JSON routes for map presentation
 
 @app.route("/api/map/stops")
@@ -183,6 +220,31 @@ def route_api_map_stop(stop_id: str) -> Response:
         }
         for idx, stop in enumerate(gtfs.all_stops_in_group(stop_id))
     ])
+
+
+@app.route("/api/map/trip/<path:trip_id>")
+def route_api_map_trip(trip_id: str) -> Response:
+    stop_to_sequences: dict[str, list[str]] = {}
+    for time in gtfs.stop_times.get(trip_id, []):
+        stop_to_sequences.setdefault(time["stop_id"], []).append(time["stop_sequence"])
+
+    stops: list[dict[str, Any]] = []
+    for stop_id, sequences in stop_to_sequences.items():
+        stop = gtfs.stops.get(stop_id, {})
+        stops.append({
+            "id": stop_id,
+            "lat": stop.get("stop_lat"),
+            "lon": stop.get("stop_lon"),
+            "name": stop.get("stop_name"),
+            "seq": sequences
+        })
+
+    return jsonify(stops)
+
+
+@app.route("/api/map/shape/<path:shape_id>")
+def route_api_map_shape(shape_id: str) -> Response:
+    return jsonify(gtfs.shapes.get(shape_id, []))
 
 
 # Go!
