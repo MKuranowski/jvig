@@ -6,6 +6,7 @@ FIXTURE_PATH = Path(__file__).with_name("fixtures")
 
 # TODO: Test stop-station structures
 # TODO: Test missing agency_id
+# TODO: Test Gtfs.all_stops_in_group
 
 
 class BaseWkdGtfsTest:

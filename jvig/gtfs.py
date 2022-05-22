@@ -192,3 +192,42 @@ class Gtfs:
         """Loads data from a .zip file (if `where` is a file),
         or from a directory with .txt files (if `where` is not a file)"""
         return cls.from_zip(where) if where.is_file() else cls.from_directory(where)
+
+    def all_stops_in_group(self, stop_id: str) -> list[Row]:
+        """Returns all stops in the group to which `stop_id` belongs.
+
+        If the stop doesn't exist, returns an empty list.
+        If the stop doesn't belong to a group, returns a list with one element.
+
+        In any other cases, the provided stop will always be the
+        first element in the returned list.
+        """
+        if stop_id not in self.stops:
+            return []
+
+        stop = self.stops[stop_id]
+        stops = [stop]
+
+        if stop.get("location_type") == "1":
+            # This stop is the parent station - just append the children
+            stops.extend(
+                self.stops[child_id]
+                for child_id in self.stop_children.get(stop_id, [])
+                if child_id in self.stops
+            )
+
+        elif stop.get("parent_station") in self.stop_children:
+            # This stop is a child in a station - first append the parent,
+            # then the other children
+            parent_id = stop["parent_station"]
+
+            if parent_id in self.stops:
+                stops.append(self.stops[parent_id])
+
+            stops.extend(
+                self.stops[child_id]
+                for child_id in self.stop_children.get(parent_id, [])
+                if child_id in self.stops and child_id != stop_id
+            )
+
+        return stops

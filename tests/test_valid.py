@@ -24,3 +24,34 @@ def test_longitude():
     assert valid.longitude("240.8") is None
     assert valid.longitude("") is None
     assert valid.longitude("foo") is None
+
+
+def test_time():
+    assert valid.time("8:20:40")
+    assert valid.time("08:20:40")
+    assert valid.time("26:00:00")
+    assert not valid.time("8:20")
+    assert not valid.time("8:0:0")
+    assert not valid.time("foo")
+    assert not valid.time("")
+
+
+def test_non_negative_float():
+    assert valid.non_negative_float("0")
+    assert valid.non_negative_float("1")
+    assert valid.non_negative_float("69.420")
+    assert valid.non_negative_float("")
+    assert not valid.non_negative_float("-69.420")
+    assert not valid.non_negative_float("-1")
+    assert not valid.non_negative_float("foo")
+
+
+def test_uint():
+    assert valid.uint("0")
+    assert valid.uint("1")
+    assert not valid.uint("69.420")
+    assert not valid.uint("")
+    assert not valid.uint("-69.420")
+    assert not valid.uint("-0")
+    assert not valid.uint("-1")
+    assert not valid.uint("foo")

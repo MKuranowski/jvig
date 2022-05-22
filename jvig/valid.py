@@ -4,8 +4,10 @@ from typing import Optional
 
 COLOR_PATTERN = re.compile(r"^[0-9A-Fa-f]{6}$")
 DATE_PATTERN = re.compile(r"^[0-9]{8}$")
-TIME_PATTERN = re.compile(r"^([0-9]{1,}):([0-9]{2}):([0-9]{2})$")
+TIME_PATTERN = re.compile(r"^([0-9]+):([0-9]{2}):([0-9]{2})$")
+
 DECIMAL_PATTERN = re.compile(r"^-?[0-9]+(?:\.[0-9]+)?$")
+UINT_PATTERN = re.compile(r"^[0-9]+$")
 
 
 def color(text: str) -> bool:
@@ -34,3 +36,15 @@ def longitude(text: str) -> Optional[float]:
         return None
 
     return value
+
+
+def time(text: str) -> bool:
+    return TIME_PATTERN.match(text) is not None
+
+
+def non_negative_float(text: str) -> bool:
+    return not text or (text[:1] != "-" and DECIMAL_PATTERN.match(text) is not None)
+
+
+def uint(text: str) -> bool:
+    return UINT_PATTERN.match(text) is not None
