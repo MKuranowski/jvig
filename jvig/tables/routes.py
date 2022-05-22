@@ -1,5 +1,6 @@
-import re
 from markupsafe import escape
+
+from .. import valid
 
 VALID_FIELDS: set[str] = {
     "route_id", "agency_id", "route_short_name", "route_long_name", "route_type", "route_desc",
@@ -21,10 +22,6 @@ ROUTE_TYPE_DATA: dict[str, tuple[str, bool]] = {
 }
 
 
-def _is_valid_color(color: str) -> bool:
-    return not color or bool(re.match(r"[0-9A-Fa-f]{6}", color))
-
-
 def header_class(field: str) -> str:
     return "" if field in VALID_FIELDS else "value-unrecognized"
 
@@ -33,7 +30,7 @@ def format_cell(row: dict[str, str], field: str) -> str:
     value = row[field]
 
     if field in {"route_color", "route_text_color"}:
-        if _is_valid_color(value):
+        if valid.color(value):
             return f"<td>{escape(value)}</td>"
         else:
             return f'<td class="value-invalid">{escape(value)}</td>'
@@ -53,8 +50,8 @@ def format_cell(row: dict[str, str], field: str) -> str:
         text_color = row.get("route_text_color")
 
         # To create a nice color blob we need valid colors
-        if not color or not text_color or not _is_valid_color(color) \
-                or not _is_valid_color(text_color):
+        if not color or not text_color or not valid.color(color) \
+                or not valid.color(text_color):
             return f'<td>{escape(value)}</td>'
 
         style = f"background-color: #{color}; color: #{text_color}; " \
