@@ -23,6 +23,9 @@ def format_cell(row: dict[str, str], field: str) -> str:
     if field == "route_id":
         return f'<td><a href="/route/{quote_plus(value)}">{escape(value)}</a></td>'
 
+    elif field == "service_id":
+        return f'<td><a href="/calendar/{quote_plus(value)}">{escape(value)}</a></td>'
+
     elif field in {"direction_id", "exceptional"}:
         if value in {"0", "1"}:
             return f"<td>{escape(value)}</td>"

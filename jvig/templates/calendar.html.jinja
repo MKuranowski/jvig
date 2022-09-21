@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<!--
+jvig - GTFS Viewer application written using Typescript & Electron
+Copyright © 2022 Mikołaj Kuranowski
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>jvig</title>
+    <link rel="icon" href="/static/jvig.png" />
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <div class="header" id="header"><h2>
+      <a href="/agency">Agencies</a>
+      | <a href="/routes">Routes</a>
+      | <a href="/stops">Stops</a>
+      | <a href="/calendars">Calendars</a>
+    </h2></div>
+    <div id="content">
+      {% if missing %}
+        <h3 class="value-error">Error! Calendar {{ service_id | e }} doesn't exist</h3>
+      {% else %}
+
+        {% if calendar_row %}
+        <div>
+          <h5>Calendar</h5>
+          <table>
+            <tr>
+              {% for field in calendar_header %}
+                <th class="{{ calendar_header_class(field) }}">{{ field | e }}</th>
+              {% endfor %}
+            </tr>
+            <tr>
+              {% for field in calendar_header %}
+                {{ calendar_format_cell(calendar_row, field) }}
+              {% endfor %}
+            </tr>
+          </table>
+        </div>
+        {% endif %}
+
+        {% if calendar_row and calendar_dates_rows %}<hr />{% endif %}
+
+        {% if calendar_dates_rows %}
+        <div>
+          <h5>Calendar Rows</h5>
+          <table>
+            <tr>
+              {% for field in calendar_dates_header %}
+                <th class="{{ calendar_dates_header_class(field) }}">
+                  {{ field | e }}
+                </th>
+              {% endfor %}
+            </tr>
+            {% for row in calendar_dates_rows %}
+              <tr>
+                {% for field in calendar_dates_header %}
+                  {{ calendar_dates_format_cell(row, field) }}
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </table>
+        </div>
+        {% endif %}
+      {% endif %}
+    </div>
+  </body>
+</html>

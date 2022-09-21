@@ -7,7 +7,7 @@ from flask import Flask, jsonify, render_template
 from flask.wrappers import Response
 
 from .gtfs import Gtfs, Row
-from .tables import agency, frequencies, routes, stops, times, trips
+from .tables import agency, calendar, calendar_dates, frequencies, routes, stops, times, trips
 from .util import sequence_to_int, time_to_int, to_js_literal
 
 # Parse the argument
@@ -33,6 +33,10 @@ app.jinja_env.globals["times_header_class"] = times.header_class
 app.jinja_env.globals["times_format_cell"] = times.format_cell
 app.jinja_env.globals["frequencies_header_class"] = frequencies.header_class
 app.jinja_env.globals["frequencies_format_cell"] = frequencies.format_cell
+app.jinja_env.globals["calendar_header_class"] = calendar.header_class
+app.jinja_env.globals["calendar_format_cell"] = calendar.format_cell
+app.jinja_env.globals["calendar_dates_header_class"] = calendar_dates.header_class
+app.jinja_env.globals["calendar_dates_format_cell"] = calendar_dates.format_cell
 
 # Helper functions
 app.jinja_env.globals["to_js_literal"] = to_js_literal
@@ -188,6 +192,29 @@ def route_trip(trip_id: str) -> str:
         stop_names=stop_names,
         frequencies=gtfs.frequencies.get(trip_id),
         frequencies_header=gtfs.header_of("frequencies"),
+    )
+
+
+@app.route("/calendars")
+def route_calendars() -> str:
+    return render_template(
+        "calendars.html.jinja",
+        missing=(not gtfs.calendar) and (not gtfs.calendar_dates),
+        header=gtfs.header_of("calendar"),
+        data=gtfs.calendar.values(),
+        implicit_calendars=[i for i in gtfs.calendar_dates if i not in gtfs.calendar],
+    )
+
+
+@app.route("/calendar/<path:service_id>")
+def route_calendar(service_id: str) -> str:
+    return render_template(
+        "calendar.html.jinja",
+        missing=service_id not in gtfs.calendar and service_id not in gtfs.calendar_dates,
+        calendar_row=gtfs.calendar.get(service_id),
+        calendar_header=gtfs.header_of("calendar"),
+        calendar_dates_rows=gtfs.calendar_dates.get(service_id),
+        calendar_dates_header=gtfs.header_of("calendar_dates"),
     )
 
 

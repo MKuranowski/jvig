@@ -55,3 +55,13 @@ def test_uint():
     assert not valid.uint("-0")
     assert not valid.uint("-1")
     assert not valid.uint("foo")
+
+
+def test_date():
+    assert valid.date("20200101")
+    assert valid.date("20200229")
+    assert not valid.date("20210229")
+    assert not valid.date("")
+    assert not valid.date("0")
+    assert not valid.date("20202020")
+    assert not valid.date("20201040")

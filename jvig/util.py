@@ -1,5 +1,8 @@
 from jinja2 import is_undefined
-from typing import Any
+from typing import Any, Hashable, Iterable, TypeVar
+
+T = TypeVar("T")
+THashable = TypeVar("THashable", bound=Hashable)
 
 
 def time_to_int(time: str) -> int:
@@ -33,3 +36,18 @@ def to_js_literal(obj: Any) -> str:
 
     else:
         raise ValueError(f"Unsupported conversion to JS literal from {type(obj).__name__}")
+
+
+def unique_list(it: Iterable[THashable]) -> list[THashable]:
+    """Similar to `list(it)`, except that duplicate entries are removed.
+    In other words, similar to `list(set(it))`, except that order of elements is preserved.
+    """
+    seen: set[THashable] = set()
+    lst: list[THashable] = []
+
+    for i in it:
+        if i not in seen:
+            seen.add(i)
+            lst.append(i)
+
+    return lst

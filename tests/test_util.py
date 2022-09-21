@@ -36,3 +36,7 @@ def test_to_js_literal():
     assert util.to_js_literal(-2) == "-2"
     assert util.to_js_literal(14564532132) == "14564532132"
     assert util.to_js_literal(-9999999999) == "-9999999999"
+
+
+def test_unique_list():
+    assert util.unique_list([1, 2, 2, 3, 3, 1, 4, 5, 5, 4]) == [1, 2, 3, 4, 5]

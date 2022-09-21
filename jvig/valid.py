@@ -1,3 +1,4 @@
+import datetime
 import re
 from math import isnan
 from typing import Optional
@@ -48,3 +49,17 @@ def non_negative_float(text: str) -> bool:
 
 def uint(text: str) -> bool:
     return UINT_PATTERN.match(text) is not None
+
+
+def date(text: str) -> bool:
+    if DATE_PATTERN.match(text) is None:
+        return False
+    try:
+        datetime.date(
+            int(text[0:4]),
+            int(text[4:6]),
+            int(text[6:8]),
+        )
+        return True
+    except ValueError:
+        return False
