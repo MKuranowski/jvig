@@ -1,5 +1,8 @@
-from jvig import util
+from datetime import date
+
+import pytest
 from jinja2 import Undefined
+from jvig import util
 
 
 def test_time_to_int():
@@ -36,6 +39,20 @@ def test_to_js_literal():
     assert util.to_js_literal(-2) == "-2"
     assert util.to_js_literal(14564532132) == "14564532132"
     assert util.to_js_literal(-9999999999) == "-9999999999"
+
+
+def test_parse_gtfs_date():
+    assert util.parse_gtfs_date("20200229") == date(2020, 2, 29)
+    assert util.parse_gtfs_date("11111111") == date(1111, 11, 11)
+
+    with pytest.raises(ValueError):
+        util.parse_gtfs_date("20220229")
+
+    with pytest.raises(ValueError):
+        util.parse_gtfs_date("")
+
+    with pytest.raises(ValueError):
+        util.parse_gtfs_date("2020")
 
 
 def test_unique_list():

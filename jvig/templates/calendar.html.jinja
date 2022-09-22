@@ -23,6 +23,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <title>jvig</title>
     <link rel="icon" href="/static/jvig.png" />
     <link rel="stylesheet" href="/static/style.css" />
+
+    <!-- Calendar widget -->
+    <script src="/static/cal.js"></script>
   </head>
   <body>
     <div class="header" id="header"><h2>
@@ -77,7 +80,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           </table>
         </div>
         {% endif %}
+
+        <hr />
+        <h5>Active days</h5>
+        <div id="cal"></div>
       {% endif %}
     </div>
   </body>
+  <script>
+    "use strict";
+    showServiceActiveDates("cal", {{ to_js_literal(service_id) }});
+  </script>
 </html>

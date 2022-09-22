@@ -1,5 +1,7 @@
+from datetime import date
 from pathlib import Path
 from typing import ClassVar, Optional
+
 from jvig.gtfs import Gtfs
 
 FIXTURE_PATH = Path(__file__).with_name("fixtures")
@@ -99,6 +101,14 @@ class BaseWkdGtfsTest:
         ]
         assert g.header_of("stop_times") == ["trip_id", "stop_sequence", "stop_id",
                                              "arrival_time", "departure_time"]
+
+    def test_all_dates_of(self) -> None:
+        dates = self.get_gtfs().all_dates_of("C")
+        assert date(2021, 12, 12) in dates
+        assert date(2021, 12, 13) not in dates
+        assert date(2021, 12, 24) in dates
+        assert date(2022, 12, 30) not in dates
+        assert date(2022, 12, 31) in dates
 
 
 class TestWkdGtfsZip(BaseWkdGtfsTest):

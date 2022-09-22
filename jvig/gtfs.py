@@ -2,10 +2,13 @@ import csv
 import logging
 import zipfile
 from dataclasses import dataclass, field
+from datetime import date, timedelta
 from io import TextIOWrapper
 from math import nan
 from pathlib import Path
 from typing import IO, Callable, List, Union
+
+from .util import parse_gtfs_date
 
 logger = logging.getLogger("jvig.gtfs")
 
@@ -231,3 +234,36 @@ class Gtfs:
             )
 
         return stops
+
+    def all_dates_of(self, service_id: str) -> set[date]:
+        """Returns a set of all date on which a particular calendar is active"""
+        dates: set[date] = set()
+
+        # Read the calendar.txt row
+        calendar_row = self.calendar.get(service_id)
+        if calendar_row:
+            active_weekdays = {
+                0: calendar_row["monday"] == "1",
+                1: calendar_row["tuesday"] == "1",
+                2: calendar_row["wednesday"] == "1",
+                3: calendar_row["thursday"] == "1",
+                4: calendar_row["friday"] == "1",
+                5: calendar_row["saturday"] == "1",
+                6: calendar_row["sunday"] == "1",
+            }
+            day = parse_gtfs_date(calendar_row["start_date"])
+            end = parse_gtfs_date(calendar_row["end_date"])
+            while day <= end:
+                if active_weekdays[day.weekday()]:
+                    dates.add(day)
+                day += timedelta(days=1)
+
+        # Add the calendar_dates.txt rows
+        for dates_row in self.calendar_dates.get(service_id, []):
+            day = parse_gtfs_date(dates_row["date"])
+            if dates_row["exception_type"] == "1":
+                dates.add(day)
+            elif dates_row["exception_type"] == "2":
+                dates.discard(day)
+
+        return dates

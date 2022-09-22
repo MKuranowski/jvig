@@ -210,6 +210,7 @@ def route_calendars() -> str:
 def route_calendar(service_id: str) -> str:
     return render_template(
         "calendar.html.jinja",
+        service_id=service_id,
         missing=service_id not in gtfs.calendar and service_id not in gtfs.calendar_dates,
         calendar_row=gtfs.calendar.get(service_id),
         calendar_header=gtfs.header_of("calendar"),
@@ -272,6 +273,13 @@ def route_api_map_trip(trip_id: str) -> Response:
 @app.route("/api/map/shape/<path:shape_id>")
 def route_api_map_shape(shape_id: str) -> Response:
     return jsonify(gtfs.shapes.get(shape_id, []))
+
+
+# JSON calendar data
+
+@app.route("/api/calendar/days/<path:service_id>")
+def route_api_calendar_dates(service_id: str) -> Response:
+    return jsonify([i.isoformat() for i in gtfs.all_dates_of(service_id)])
 
 
 # Go!

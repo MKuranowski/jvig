@@ -24,6 +24,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <link rel="icon" href="/static/jvig.png" />
     <link rel="stylesheet" href="/static/style.css" />
 
+    <!-- Calendar widget -->
+    <script src="/static/cal.js"></script>
+
     <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
       integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
@@ -83,7 +86,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         </div>
 
         {# stop_times table #}
-        <hr>
+        <hr />
         <div>
           {% if not times %}
             <h5 class="value-error">Trip has no stop_times</h3>
@@ -133,6 +136,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             </table>
           </div>
         {% endif %}
+
+        {# active dates #}
+        <div>
+          <hr />
+          <h5>Active days</h5>
+          <div id="cal"></div>
+        </div>
       {% endif %}
     </div>
   </body>
@@ -142,6 +152,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     //       can be interpreted as JS string literals without something breaking
     const trip_id = {{ to_js_literal(trip.trip_id) }};
     const shape_id = {{ to_js_literal(trip.shape_id) }};
+    const service_id = {{ to_js_literal(trip.service_id) }};
 
     // Create the map
     const map = L.map('map');
@@ -197,5 +208,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           .then(r => r.json())
           .then(points => L.polyline(points, { weight: 5 }).addTo(map));
       }
+
+      // Show active days of the calendar
+      showServiceActiveDates("cal", service_id);
   </script>
 </html>

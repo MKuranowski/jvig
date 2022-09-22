@@ -1,3 +1,4 @@
+from datetime import date
 from jinja2 import is_undefined
 from typing import Any, Hashable, Iterable, TypeVar
 
@@ -36,6 +37,13 @@ def to_js_literal(obj: Any) -> str:
 
     else:
         raise ValueError(f"Unsupported conversion to JS literal from {type(obj).__name__}")
+
+
+def parse_gtfs_date(x: str) -> date:
+    """Parses a GTFS date string ("%Y%m%d") into a datetime.date instance.
+    Faster than `datetime.strptime(x, "%Y%m%d").date()`.
+    """
+    return date(int(x[0:4]), int(x[4:6]), int(x[6:8]))
 
 
 def unique_list(it: Iterable[THashable]) -> list[THashable]:
