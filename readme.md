@@ -21,20 +21,21 @@ jvig can open both folders and ZIP archives.
 Features/Todos
 --------------
 
-#### Viewing GTFS tables
+#### Shown GTFS tables
 
-- [ ] agencies
-- [ ] stops
-- [ ] routes
-- [ ] trips
-- [ ] frequencies
-- [ ] calendars
+- [x] agencies
+- [x] stops
+- [x] routes
+- [x] trips
+- [x] frequencies
+- [x] calendars
 - [ ] fares
 - [ ] transfers
 - [ ] pathways
 - [ ] feed_info
 - [ ] attributions
 - [ ] translations
+- [x] shapes
 
 #### Other improvements
 - [x] search (provided by the browser)
