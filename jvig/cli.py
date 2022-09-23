@@ -325,5 +325,5 @@ def main() -> int:
     app = Application(gtfs)
 
     # Run it
-    app.run()
+    app.run(args.debug)
     return 0
