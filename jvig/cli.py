@@ -24,28 +24,32 @@ class Application:
 
     def _init_template_functions(self) -> None:
         # Apply template filters
-        self.flask.jinja_env.globals["agency_header_class"] = agency.header_class
-        self.flask.jinja_env.globals["routes_header_class"] = routes.header_class
-        self.flask.jinja_env.globals["routes_format_cell"] = routes.format_cell
-        self.flask.jinja_env.globals["stops_header_class"] = stops.header_class
-        self.flask.jinja_env.globals["stops_format_cell"] = stops.format_cell
-        self.flask.jinja_env.globals["trips_header_class"] = trips.header_class
-        self.flask.jinja_env.globals["trips_format_cell"] = trips.format_cell
-        self.flask.jinja_env.globals["times_header_class"] = times.header_class
-        self.flask.jinja_env.globals["times_format_cell"] = times.format_cell
-        self.flask.jinja_env.globals["frequencies_header_class"] = frequencies.header_class
-        self.flask.jinja_env.globals["frequencies_format_cell"] = frequencies.format_cell
-        self.flask.jinja_env.globals["calendar_header_class"] = calendar.header_class
-        self.flask.jinja_env.globals["calendar_format_cell"] = calendar.format_cell
-        self.flask.jinja_env.globals["calendar_dates_header_class"] = calendar_dates.header_class
-        self.flask.jinja_env.globals["calendar_dates_format_cell"] = calendar_dates.format_cell
+        self.flask.add_template_global(agency.header_class, "agency_header_class")
+        self.flask.add_template_global(routes.header_class, "routes_header_class")
+        self.flask.add_template_global(routes.format_cell, "routes_format_cell")
+        self.flask.add_template_global(stops.header_class, "stops_header_class")
+        self.flask.add_template_global(stops.format_cell, "stops_format_cell")
+        self.flask.add_template_global(trips.header_class, "trips_header_class")
+        self.flask.add_template_global(trips.format_cell, "trips_format_cell")
+        self.flask.add_template_global(times.header_class, "times_header_class")
+        self.flask.add_template_global(times.format_cell, "times_format_cell")
+        self.flask.add_template_global(frequencies.header_class, "frequencies_header_class")
+        self.flask.add_template_global(frequencies.format_cell, "frequencies_format_cell")
+        self.flask.add_template_global(calendar.header_class, "calendar_header_class")
+        self.flask.add_template_global(calendar.format_cell, "calendar_format_cell")
+        self.flask.add_template_global(calendar_dates.header_class, "calendar_dates_header_class")
+        self.flask.add_template_global(calendar_dates.format_cell, "calendar_dates_format_cell")
 
         # Helper functions
-        self.flask.jinja_env.globals["to_js_literal"] = to_js_literal
-        self.flask.jinja_env.globals["trip_first_time"] = lambda trip_id: \
-            self.gtfs.stop_times[trip_id][0]["departure_time"]
-        self.flask.jinja_env.globals["trip_last_time"] = lambda trip_id: \
-            self.gtfs.stop_times[trip_id][-1]["departure_time"]
+        self.flask.add_template_global(to_js_literal, "to_js_literal")
+        self.flask.add_template_global(
+            lambda trip_id: self.gtfs.stop_times[trip_id][0]["departure_time"],
+            "trip_first_time",
+        )
+        self.flask.add_template_global(
+            lambda trip_id: self.gtfs.stop_times[trip_id][-1]["departure_time"],
+            "trip_last_time",
+        )
 
     def _init_html_routes(self) -> None:
         self.flask.add_url_rule("/", view_func=self.route_agency)
