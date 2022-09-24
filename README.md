@@ -67,6 +67,15 @@ Development
 This project uses `isort` and `black` for file formatting and `pyright` for type checking.
 The maximum line length is increased to 99, and the type checking is set to strict.
 
+CI runs the following commands to help maintain high code quality:
+
+```console
+$ black --check .
+$ isort --check .
+$ pyright
+$ python -m pytest
+```
+
 If you use VS Code I recommend using the following settings:
 
 ```json
