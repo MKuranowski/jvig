@@ -1,5 +1,4 @@
 import argparse
-from bisect import insort
 from pathlib import Path
 from typing import Any, Optional
 
@@ -149,17 +148,16 @@ class Application:
                 continue
             trip = self.gtfs.trips[time["trip_id"]]
 
-            # Keep the list sorted by departure_time
-            insort(
-                times_by_service.setdefault(trip["service_id"], []),
-                time,
-                key=lambda t: time_to_int(t.get("departure_time", "")),
-            )
+            times_by_service.setdefault(trip["service_id"], []).append(time)
 
             if trip_short_names is not None:
                 trip_short_names[trip["trip_id"]] = trip["trip_short_name"]
             if trip_headsigns is not None:
                 trip_headsigns[trip["trip_id"]] = trip["trip_headsign"]
+
+        # Ensure times_by_service are ordered by the departure time
+        for lst in times_by_service.values():
+            lst.sort(key=lambda t: time_to_int(t.get("departure_time", "")))
 
         # Calculate colspan
         colspan = len(self.gtfs.header_of("stop_times"))
