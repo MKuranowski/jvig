@@ -1,0 +1,4 @@
+fare_id,price,currency_type,payment_method,transfers,transfer_duration
+1,4.10,PLN,1,0,1140
+2,5.50,PLN,1,0,2280
+3,8.00,PLN,1,0,

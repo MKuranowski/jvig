@@ -1,8 +1,9 @@
 .vscode
-build
-dist
-node_modules
-icon/bus.svg
-icon/crane.svg
+__pycache__
+*.pyc
 *.zip
-!src/test/fixture/**/*.zip
+*.egg-info
+dist
+venv
+
+!tests/fixtures/*.zip

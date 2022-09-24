@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<!--
+jvig - GTFS Viewer application written using Typescript & Electron
+Copyright © 2020-2022 Mikołaj Kuranowski
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>jvig</title>
+    <link rel="icon" href="/static/jvig.png" />
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <div class="header" id="header"><h2>
+      <a href="/agency">Agencies</a>
+      | <a href="/routes">Routes</a>
+      | <a href="/stops">Stops</a>
+      | <a href="/calendars">Calendars</a>
+    </h2></div>
+    <div id="content">
+    {% if missing %}
+      <h3 class="value-error">Error! File trips.txt is not present in the GTFS</h3>
+    {% else %}
+      <table>
+        <tr>
+          <th></th>
+          {% for field in header %}
+          <th class="{{ trips_header_class(field) }}">
+            {{ field | e }}
+          </th>
+          {% endfor %}
+          <th class="value-inherited">first time</th>
+          <th class="value-inherited">last time</th>
+        </tr>
+        {% for row in data %}
+          <tr>
+            <td><a href="/trip/{{ row.trip_id | urlencode }}">Trip times →</a></td>
+            {% for field in header %}
+              {{ trips_format_cell(row, field) }}
+            {% endfor %}
+            <td>{{ trip_first_time(row.trip_id) | e }}</td>
+            <td>{{ trip_last_time(row.trip_id) | e }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+    {% endif %}
+    </div>
+  </body>
+</html>

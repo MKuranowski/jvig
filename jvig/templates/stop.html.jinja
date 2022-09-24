@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<!--
+jvig - GTFS Viewer application written using Typescript & Electron
+Copyright © 2020-2022 Mikołaj Kuranowski
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>jvig</title>
+    <link rel="icon" href="/static/jvig.png" />
+    <link rel="stylesheet" href="/static/style.css" />
+
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+      integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+      crossorigin="anonymous" />
+    <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+      integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+      crossorigin="anonymous"></script>
+
+    <!-- Leaflet.markercluster -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+      integrity="sha512-mQ77VzAakzdpWdgfL/lM1ksNy89uFgibRQANsNneSTMD/bj0Y/8+94XMwYhnbzx8eki2hrbPpDm0vD0CiT2lcg=="
+      crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+      integrity="sha512-6ZCLMiYwTeli2rVh3XAPxy3YoR5fVxGdH/pz+KMCzRY2M65Emgkw00Yqmhh8qLGeYQ3LbVZGdmOX9KUjSKr0TA=="
+      crossorigin="anonymous" />
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"
+      integrity="sha512-OFs3W4DIZ5ZkrDhBFtsCP6JXtMEDGmhl0QPlmWYBJay40TT1n3gt2Xuw8Pf/iezgW9CdabjkNChRqozl/YADmg=="
+      crossorigin="anonymous"></script>
+
+    <!-- Leaflet.extra-markers-->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-extra-markers@1.2.1/dist/css/leaflet.extra-markers.min.css"
+      integrity="sha512-wurszDyO1nj6ESdfrXb9h1hmoHMu3sQ3iXgKcu/p81lT+KaPGkta9NIPX7k6XXGgVYpcRHcc8AA4UIeQ7Ax/Cw=="
+      crossorigin="anonymous" />
+    <script src="https://unpkg.com/leaflet-extra-markers@1.2.1/dist/js/leaflet.extra-markers.min.js"
+      integrity="sha512-ejMFZwlfxDqEaSHHcCJ9EhzzDyp3QB5NjmGfOp1iwUQ7pFam2pX3EKERWvWK8H5HLQG6ETrx3RvrEFMQ4kIQ/Q=="
+      crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <div class="header" id="header"><h2>
+      <a href="/agency">Agencies</a>
+      | <a href="/routes">Routes</a>
+      | <a href="/stops">Stops</a>
+      | <a href="/calendars">Calendars</a>
+    </h2></div>
+    <div class="map" id="map"></div>
+    <hr>
+    <div id="content">
+      {# stops table #}
+      <div>
+        {% if missing_stop %}
+          <h3 class="value-error">Error! Stop {{ stop.stop_id | e }} doesn't exist</h3>
+        {% else %}
+          <h5>Stop data</h5>
+          <table>
+            <tr>
+              <th></th>
+              <th></th>
+              {% for field in stops_header %}
+                <th class="{{ stops_header_class(field) }}">
+                {{ field | e }}
+                </th>
+              {% endfor %}
+            </tr>
+            {% for row in stops_in_group %}
+              <tr>
+                {% if loop.first %}
+                  <td colspan="2">0</td>
+                {% else %}
+                  <td>{{ loop.index0 }}</td>
+                  <td><a href="/stop/{{ row.stop_id | urlencode }}">Stop departures →</a></td>
+                {% endif %}
+                {% for field in stops_header %}
+                  {{ stops_format_cell(row, field) }}
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </table>
+        {% endif %}
+      </div>
+
+      {# stop_times table #}
+      <hr />
+      <div>
+        {% if not times_by_service %}
+          <h5 class="value-unrecognized">No stop times at this stop</h3>
+        {% else %}
+          <h5>Stop Times</h5>
+          <table>
+            <tr>
+              {% for field in times_header %}
+                <th class="{{ times_header_class(field) }}">
+                  {{ field | e }}
+                </th>
+              {% endfor %}
+              {% if trip_short_names %}
+                <th class="value-inherited">trip_short_name</th>
+              {% endif %}
+              {% if trip_headsigns %}
+                <th class="value-inherited">trip_headsign</th>
+              {% endif %}
+            </tr>
+            {% for service_id, times in times_by_service.items() %}
+              <tr>
+                <td colspan="{{ times_colspan }}" class="align-center">service_id: {{ service_id | e }}</td>
+              </tr>
+              {% for row in times %}
+                <tr>
+                  {% for field in times_header %}
+                    {{ times_format_cell(row, field) }}
+                  {% endfor %}
+                  {% if trip_short_names %}
+                    <td>{{ trip_short_names[row.trip_id] }}</td>
+                  {% endif %}
+                  {% if trip_headsigns %}
+                    <td>{{ trip_headsigns[row.trip_id] }}</td>
+                  {% endif %}
+                </tr>
+              {% endfor %}
+            {% endfor %}
+          </table>
+        {% endif %}
+      </div>
+    </div>
+  </body>
+  <script>
+    "use strict";
+    // TODO: Actually investigate whether Python string literals
+    //       can be interpreted as JS string literals without something breaking
+    const stop_id = {{ to_js_literal(stop.stop_id) }};
+
+    // Create the map
+    const map = L.map('map');
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Tiles &copy; <a href="https://wiki.osmfoundation.org/wiki/Terms_of_Use">OpenStreetMap Foundation</a>',
+        maxZoom: 18
+    }).addTo(map);
+    const markers = L.markerClusterGroup().addTo(map);
+
+    // Fetch marker data & add them to the map
+    fetch(`/api/map/stop/${encodeURIComponent(stop_id)}`)
+      .then(r => r.json())
+      .then(stops => stops.forEach(stop => {
+        // Parse stop position
+        let lat = parseFloat(stop.lat);
+        let lon = parseFloat(stop.lon);
+        if (isNaN(lat) || isNaN(lon)) return;
+
+        // Crate the popup
+        // 1. Add a link to stop view
+        const popup = document.createElement("span");
+        const boldAnchor = document.createElement("b");
+        const anchor = document.createElement("a");
+        anchor.href = `/stop/${encodeURIComponent(stop.id)}`;
+        anchor.append("Stop departures →");
+        boldAnchor.append(anchor)
+        popup.append(boldAnchor, document.createElement("br"));
+
+        // 2. Add stop_id to popup
+        popup.append(`stop_id: ${stop.id}`, document.createElement("br"));
+
+        // 3. Add stop_code to popup
+        if (stop.code) {
+          popup.append(`stop_code: ${stop.code}`, document.createElement("br"))
+        }
+
+        // 4. Add stop_name to popup
+        popup.append(`stop_name: ${stop.name}`)
+
+        // Create leaflet marker
+        const icon = L.ExtraMarkers.icon({
+          icon: "fa-number",
+          number: stop.idx.toString(),
+          markerColor: stop.idx === 0 ? "green" : "red",
+        });
+        const m = L.marker([lat, lon], { icon: icon });
+        m.bindPopup(popup);
+        m.addTo(markers);
+      }))
+      .then(() => map.fitBounds(markers.getBounds()));
+  </script>
+</html>
