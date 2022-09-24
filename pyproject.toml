@@ -30,3 +30,6 @@ line-length = 99
 [tool.isort]
 profile = "black"
 line_length = 99
+
+[tool.pyright]
+typeCheckingMode = "strict"

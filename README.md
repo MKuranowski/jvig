@@ -59,3 +59,27 @@ Awful, I know. Make a better one if you want to.
 Currently it's these 2 things combined:
 - <https://thenounproject.com/term/crane/1689627/> (bought the rights to use)
 - <https://material.io/resources/icons/?icon=directions_bus&style=outline> (apache 2.0)
+
+
+Development
+-----------
+
+This project uses `isort` and `black` for file formatting and `pyright` for type checking.
+The maximum line length is increased to 99, and the type checking is set to strict.
+
+If you use VS Code I recommend using the following settings:
+
+```json
+{
+    "[python]": {
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        },
+        "editor.formatOnSave": true
+    },
+    "js/ts.implicitProjectConfig.checkJs": true,
+    "python.formatting.provider": "black",
+    "python.languageServer": "Pylance",
+    "python.linting.enabled": false,
+}
+```
