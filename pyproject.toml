@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jvig"
-version = "1.0.0-pre1"
+version = "1.0.0"
 description = "GTFS Viewer written using Flask"
 readme = "README.md"
 license = {text = "GNU General Public License v3.0 or later"}
