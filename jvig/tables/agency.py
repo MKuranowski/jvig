@@ -1,6 +1,12 @@
 VALID_FIELDS: set[str] = {
-    "agency_id", "agency_name", "agency_url", "agency_timezone", "agency_lang", "agency_phone",
-    "agency_fare_url", "agency_email"
+    "agency_id",
+    "agency_name",
+    "agency_url",
+    "agency_timezone",
+    "agency_lang",
+    "agency_phone",
+    "agency_fare_url",
+    "agency_email",
 }
 
 

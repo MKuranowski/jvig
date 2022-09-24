@@ -137,10 +137,12 @@ class Application:
         # Gather the stop_times of this stop,
         # and their trip_short_names and trip_headsigns
         times_by_service: dict[str, list[Row]] = {}
-        trip_short_names: Optional[dict[str, str]] = \
+        trip_short_names: Optional[dict[str, str]] = (
             {} if "trip_short_name" in self.gtfs.header_of("trips") else None
-        trip_headsigns: Optional[dict[str, str]] = \
+        )
+        trip_headsigns: Optional[dict[str, str]] = (
             {} if "trip_headsign" in self.gtfs.header_of("trips") else None
+        )
 
         for time in self.gtfs.stop_times_by_stops.get(stop_id, []):
             if time["trip_id"] not in self.gtfs.trips:
@@ -151,7 +153,7 @@ class Application:
             insort(
                 times_by_service.setdefault(trip["service_id"], []),
                 time,
-                key=lambda t: time_to_int(t.get("departure_time", ""))
+                key=lambda t: time_to_int(t.get("departure_time", "")),
             )
 
             if trip_short_names is not None:
@@ -191,12 +193,11 @@ class Application:
         trip = self.gtfs.trips[trip_id]
         times = sorted(
             self.gtfs.stop_times.get(trip_id, []),
-            key=lambda r: sequence_to_int(r.get("stop_sequence", ""))
+            key=lambda r: sequence_to_int(r.get("stop_sequence", "")),
         )
 
         stop_names = [
-            self.gtfs.stops.get(i.get("stop_id", ""), {}).get("stop_name", "")
-            for i in times
+            self.gtfs.stops.get(i.get("stop_id", ""), {}).get("stop_name", "") for i in times
         ]
 
         return render_template(
@@ -223,8 +224,9 @@ class Application:
         )
 
     def route_calendar(self, service_id: str) -> str:
-        missing = service_id not in self.gtfs.calendar \
-            and service_id not in self.gtfs.calendar_dates
+        missing = (
+            service_id not in self.gtfs.calendar and service_id not in self.gtfs.calendar_dates
+        )
 
         return render_template(
             "calendar.html.jinja",
@@ -239,29 +241,33 @@ class Application:
     # JSON routes for map presentation
 
     def route_api_map_stops(self) -> Response:
-        return jsonify([
-            {
-                "id": stop.get("stop_id"),
-                "code": stop.get("stop_code"),
-                "name": stop.get("stop_name"),
-                "lat": stop.get("stop_lat"),
-                "lon": stop.get("stop_lon"),
-            }
-            for stop in self.gtfs.stops.values()
-        ])
+        return jsonify(
+            [
+                {
+                    "id": stop.get("stop_id"),
+                    "code": stop.get("stop_code"),
+                    "name": stop.get("stop_name"),
+                    "lat": stop.get("stop_lat"),
+                    "lon": stop.get("stop_lon"),
+                }
+                for stop in self.gtfs.stops.values()
+            ]
+        )
 
     def route_api_map_stop(self, stop_id: str) -> Response:
-        return jsonify([
-            {
-                "idx": idx,
-                "id": stop.get("stop_id"),
-                "code": stop.get("stop_code"),
-                "name": stop.get("stop_name"),
-                "lat": stop.get("stop_lat"),
-                "lon": stop.get("stop_lon"),
-            }
-            for idx, stop in enumerate(self.gtfs.all_stops_in_group(stop_id))
-        ])
+        return jsonify(
+            [
+                {
+                    "idx": idx,
+                    "id": stop.get("stop_id"),
+                    "code": stop.get("stop_code"),
+                    "name": stop.get("stop_name"),
+                    "lat": stop.get("stop_lat"),
+                    "lon": stop.get("stop_lon"),
+                }
+                for idx, stop in enumerate(self.gtfs.all_stops_in_group(stop_id))
+            ]
+        )
 
     def route_api_map_trip(self, trip_id: str) -> Response:
         stop_to_sequences: dict[str, list[str]] = {}
@@ -271,13 +277,15 @@ class Application:
         stops: list[dict[str, Any]] = []
         for stop_id, sequences in stop_to_sequences.items():
             stop = self.gtfs.stops.get(stop_id, {})
-            stops.append({
-                "id": stop_id,
-                "lat": stop.get("stop_lat"),
-                "lon": stop.get("stop_lon"),
-                "name": stop.get("stop_name"),
-                "seq": sequences
-            })
+            stops.append(
+                {
+                    "id": stop_id,
+                    "lat": stop.get("stop_lat"),
+                    "lon": stop.get("stop_lon"),
+                    "name": stop.get("stop_name"),
+                    "seq": sequences,
+                }
+            )
 
         return jsonify(stops)
 
@@ -316,7 +324,8 @@ def main() -> int:
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("file", type=Path, help="path to GTFS directory/zip")
     arg_parser.add_argument(
-        "-d", "--debug",
+        "-d",
+        "--debug",
         action="store_true",
         help="enable debug mode in Flask",
     )

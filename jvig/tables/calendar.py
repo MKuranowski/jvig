@@ -3,7 +3,13 @@ from markupsafe import escape
 from .. import valid
 
 WEEKDAYS: set[str] = {
-    "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
 }
 
 VALID_FIELDS: set[str] = {"service_id", "start_date", "end_date"} | WEEKDAYS

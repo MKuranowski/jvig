@@ -1,6 +1,7 @@
 from datetime import date
-from jinja2 import is_undefined
 from typing import Any, Hashable, Iterable, TypeVar
+
+from jinja2 import is_undefined
 
 T = TypeVar("T")
 THashable = TypeVar("THashable", bound=Hashable)
@@ -9,7 +10,7 @@ THashable = TypeVar("THashable", bound=Hashable)
 def time_to_int(time: str) -> int:
     try:
         h, m, s = map(int, time.split(":"))
-        return h*3600 + m*60 + s
+        return h * 3600 + m * 60 + s
     except ValueError:
         return -1
 

@@ -2,6 +2,7 @@ from datetime import date
 
 import pytest
 from jinja2 import Undefined
+
 from jvig import util
 
 
@@ -32,8 +33,8 @@ def test_to_js_literal():
 
     assert util.to_js_literal("") == "''"
     assert util.to_js_literal("foo") == "'foo'"
-    assert util.to_js_literal('"foo"') == '\'"foo"\''
-    assert util.to_js_literal('"foo";alert(1)') == '\'"foo";alert(1)\''
+    assert util.to_js_literal('"foo"') == "'\"foo\"'"
+    assert util.to_js_literal('"foo";alert(1)') == "'\"foo\";alert(1)'"
 
     assert util.to_js_literal(0) == "0"
     assert util.to_js_literal(-2) == "-2"

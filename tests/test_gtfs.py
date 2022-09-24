@@ -96,11 +96,21 @@ class BaseWkdGtfsTest:
     def test_header_of(self) -> None:
         g = self.get_gtfs()
         assert g.header_of("routes") == [
-            "agency_id", "route_id", "route_short_name", "route_long_name",
-            "route_type", "route_color", "route_text_color"
+            "agency_id",
+            "route_id",
+            "route_short_name",
+            "route_long_name",
+            "route_type",
+            "route_color",
+            "route_text_color",
         ]
-        assert g.header_of("stop_times") == ["trip_id", "stop_sequence", "stop_id",
-                                             "arrival_time", "departure_time"]
+        assert g.header_of("stop_times") == [
+            "trip_id",
+            "stop_sequence",
+            "stop_id",
+            "arrival_time",
+            "departure_time",
+        ]
 
     def test_all_dates_of(self) -> None:
         dates = self.get_gtfs().all_dates_of("C")

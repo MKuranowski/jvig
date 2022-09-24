@@ -2,7 +2,6 @@ from markupsafe import escape
 
 from .. import valid
 
-
 VALID_FIELDS: set[str] = {"service_id", "date", "exception_type"}
 
 

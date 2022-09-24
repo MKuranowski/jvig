@@ -47,6 +47,7 @@ _table_keys: dict[str, str] = {
 class Gtfs:
     """Gtfs is a class that holds all known GTFS tables.
     It's also responsible for loading the data."""
+
     agency: TableToOne = field(default_factory=dict)
     stops: TableToOne = field(default_factory=dict)
     stop_children: dict[str, list[str]] = field(default_factory=dict)

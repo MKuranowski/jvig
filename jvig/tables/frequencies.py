@@ -1,10 +1,15 @@
-from markupsafe import escape
 from urllib.parse import quote_plus
+
+from markupsafe import escape
 
 from .. import valid
 
 VALID_FIELDS: set[str] = {
-    "trip_id", "start_time", "end_time", "headway_secs", "exact_times",
+    "trip_id",
+    "start_time",
+    "end_time",
+    "headway_secs",
+    "exact_times",
 }
 
 
