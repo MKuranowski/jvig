@@ -24,7 +24,7 @@ from math import nan
 from pathlib import Path
 from typing import IO, Callable, List, Union
 
-from .util import parse_gtfs_date
+from .util import parse_gtfs_date, sequence_to_int
 
 logger = logging.getLogger("jvig.gtfs")
 
@@ -126,7 +126,6 @@ class Gtfs:
     def load_stop_times(self, table_name: str, stream: IO[str]) -> None:
         """Specialized loader for stop_times.txt, which loads the data
         into self.stop_times and self.stop_times_by_stops."""
-        # FIXME: Sort by stop_sequence
 
         assert table_name == "stop_times"
         self.stop_times.clear()
@@ -135,6 +134,10 @@ class Gtfs:
         for row in csv.DictReader(stream):
             self.stop_times.setdefault(row["trip_id"], []).append(row)
             self.stop_times_by_stops.setdefault(row["stop_id"], []).append(row)
+
+        # Sort stop_times by stop_sequence
+        for trip_stop_times in self.stop_times.values():
+            trip_stop_times.sort(key=lambda row: sequence_to_int(row.get("stop_sequence", "")))
 
     def header_of(self, table_name: str) -> List[str]:
         """Returns the GTFS header of a particlar table."""
