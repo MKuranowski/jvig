@@ -21,8 +21,9 @@ from dataclasses import dataclass, field
 from datetime import date, timedelta
 from io import TextIOWrapper
 from math import nan
+from operator import itemgetter
 from pathlib import Path
-from typing import IO, Callable, List, Union
+from typing import IO, Callable, List, Optional, Union
 
 from .util import parse_gtfs_date, sequence_to_int
 
@@ -37,13 +38,13 @@ TableToPoints = dict[str, list[Point]]
 Table = Union[TableToOne, TableToMany, TableToPoints]
 
 
-def _get_shape_pt(row: Row) -> Point:
+def _get_shape_pt(row: Row) -> Optional[Point]:
     """Tries to parse a shapes.txt row into a Point tuple.
-    If there's anything wrong with the row, returns (nan, nan)."""
+    If there's anything wrong with the row, returns None"""
     try:
         return float(row.get("shape_pt_lat", nan)), float(row.get("shape_pt_lon", nan))
     except ValueError:
-        return nan, nan
+        return None
 
 
 _table_keys: dict[str, str] = {
@@ -117,11 +118,25 @@ class Gtfs:
     def load_shapes(self, table_name: str, stream: IO[str]) -> None:
         """Specialized loader for shapes.txt to parse the shape."""
         assert table_name == "shapes"
-        self.shapes.clear()
 
-        # FIXME: First sort by shape_pt_sequence
+        shapes_with_indices: dict[str, list[tuple[int, Point]]] = {}
+
         for row in csv.DictReader(stream):
-            self.shapes.setdefault(row["shape_id"], []).append(_get_shape_pt(row))
+            idx = sequence_to_int(row.get("shape_pt_sequence", ""))
+            pt = _get_shape_pt(row)
+
+            # NOTE: Invalid rows are silently ignored
+            if idx >= 0 and pt is not None:
+                shapes_with_indices.setdefault(row["shape_id"], []).append((idx, pt))
+
+        # Sort shapes by shape_pt_sequence
+        for shape in shapes_with_indices.values():
+            shape.sort(key=itemgetter(0))
+
+        # Set shapes table
+        self.shapes = {
+            shape_id: [i[1] for i in shape] for shape_id, shape in shapes_with_indices.items()
+        }
 
     def load_stop_times(self, table_name: str, stream: IO[str]) -> None:
         """Specialized loader for stop_times.txt, which loads the data
