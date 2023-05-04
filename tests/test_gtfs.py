@@ -189,3 +189,34 @@ def test_unordered_stop_times() -> None:
     assert gtfs.stop_times["t2"][1]["stop_id"] == "s1"
     assert gtfs.stop_times["t2"][2]["stop_sequence"] == "3"
     assert gtfs.stop_times["t2"][2]["stop_id"] == "s0"
+
+
+def test_unordered_shapes() -> None:
+    shapes_file = StringIO(
+        (
+            "shape_id,shape_pt_sequence,shape_pt_lat,shape_pt_lon\r\n"
+            "A,2,2.0,2.0\r\n"
+            "A,0,0.0,0.0\r\n"
+            "A,1,1.0,1.0\r\n"
+            "B,3,-3.0,-3.0\r\n"
+            "B,1,-1.0,-1.0\r\n"
+            "B,2,-2.0,-2.0\r\n"
+            "B,0,0.0,0.0\r\n"
+        )
+    )
+
+    gtfs = Gtfs()
+    gtfs.load_shapes("shapes", shapes_file)
+
+    assert len(gtfs.shapes) == 2
+
+    assert len(gtfs.shapes["A"]) == 3
+    assert gtfs.shapes["A"][0] == (0.0, 0.0)
+    assert gtfs.shapes["A"][1] == (1.0, 1.0)
+    assert gtfs.shapes["A"][2] == (2.0, 2.0)
+
+    assert len(gtfs.shapes["B"]) == 4
+    assert gtfs.shapes["B"][0] == (0.0, 0.0)
+    assert gtfs.shapes["B"][1] == (-1.0, -1.0)
+    assert gtfs.shapes["B"][2] == (-2.0, -2.0)
+    assert gtfs.shapes["B"][3] == (-3.0, -3.0)
