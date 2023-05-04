@@ -23,7 +23,7 @@ from flask.wrappers import Response
 
 from .gtfs import Gtfs, Row
 from .tables import agency, calendar, calendar_dates, frequencies, routes, stops, times, trips
-from .util import sequence_to_int, time_to_int, to_js_literal
+from .util import time_to_int, to_js_literal
 
 
 class Application:
@@ -205,10 +205,7 @@ class Application:
 
         # Prepare data for rendering
         trip = self.gtfs.trips[trip_id]
-        times = sorted(
-            self.gtfs.stop_times.get(trip_id, []),
-            key=lambda r: sequence_to_int(r.get("stop_sequence", "")),
-        )
+        times = self.gtfs.stop_times.get(trip_id, [])
 
         stop_names = [
             self.gtfs.stops.get(i.get("stop_id", ""), {}).get("stop_name", "") for i in times
