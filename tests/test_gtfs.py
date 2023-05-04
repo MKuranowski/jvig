@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from datetime import date
+from io import StringIO
 from pathlib import Path
 from typing import ClassVar, Optional
 
@@ -153,3 +154,38 @@ class TestWkdGtfsDirectory(BaseWkdGtfsTest):
         if not TestWkdGtfsDirectory.gtfs_instance:
             TestWkdGtfsDirectory.gtfs_instance = Gtfs.from_directory(FIXTURE_PATH / "gtfs_wkd")
         return TestWkdGtfsDirectory.gtfs_instance
+
+
+def test_unordered_stop_times() -> None:
+    stop_times_file = StringIO(
+        (
+            "trip_id,stop_sequence,stop_id,arrival_time,departure_time\r\n"
+            "t1,1,s0,10:00:00,10:00:00\r\n"
+            "t1,2,s1,10:05:00,10:05:00\r\n"
+            "t1,3,s2,10:10:00,10:10:00\r\n"
+            "t2,3,s0,10:25:00,10:25:00\r\n"
+            "t2,2,s1,10:20:00,10:20:00\r\n"
+            "t2,1,s2,10:15:00,10:15:00\r\n"
+        )
+    )
+
+    gtfs = Gtfs()
+    gtfs.load_stop_times("stop_times", stop_times_file)
+
+    assert len(gtfs.stop_times) == 2
+
+    assert len(gtfs.stop_times["t1"]) == 3
+    assert gtfs.stop_times["t1"][0]["stop_sequence"] == "1"
+    assert gtfs.stop_times["t1"][0]["stop_id"] == "s0"
+    assert gtfs.stop_times["t1"][1]["stop_sequence"] == "2"
+    assert gtfs.stop_times["t1"][1]["stop_id"] == "s1"
+    assert gtfs.stop_times["t1"][2]["stop_sequence"] == "3"
+    assert gtfs.stop_times["t1"][2]["stop_id"] == "s2"
+
+    assert len(gtfs.stop_times["t2"]) == 3
+    assert gtfs.stop_times["t2"][0]["stop_sequence"] == "1"
+    assert gtfs.stop_times["t2"][0]["stop_id"] == "s2"
+    assert gtfs.stop_times["t2"][1]["stop_sequence"] == "2"
+    assert gtfs.stop_times["t2"][1]["stop_id"] == "s1"
+    assert gtfs.stop_times["t2"][2]["stop_sequence"] == "3"
+    assert gtfs.stop_times["t2"][2]["stop_id"] == "s0"
