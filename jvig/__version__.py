@@ -1,6 +1,6 @@
 __title__ = "jvig"
 __description__ = "GTFS Viewer, created using Flask."
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __url__ = "https://github.com/MKuranowski/jvig"
 __author__ = "Mikołaj Kuranowski"
 __email__ = "mkuranowski+pypackages@gmail.com"
