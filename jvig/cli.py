@@ -21,6 +21,7 @@ from typing import Any, Optional
 from flask import Flask, jsonify, render_template
 from flask.wrappers import Response
 
+from .__version__ import __version__
 from .gtfs import Gtfs, Row
 from .tables import agency, calendar, calendar_dates, frequencies, routes, stops, times, trips
 from .util import time_to_int, to_js_literal
@@ -340,6 +341,7 @@ def main() -> int:
         action="store_true",
         help="enable debug mode in Flask",
     )
+    arg_parser.add_argument("-V", "--version", action="version", version=f"jvig {__version__}")
     args = arg_parser.parse_args()
 
     # Load GTFS data
