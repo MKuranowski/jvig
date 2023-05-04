@@ -159,7 +159,7 @@ class Gtfs:
         table: Union[TableToOne, TableToMany] = getattr(self, table_name)
 
         # Get the first entry from the table
-        entry = next(iter(table.values()), {})
+        entry = next(iter(table.values()), Row())
 
         # If it's a list of rows, get its first row
         if isinstance(entry, list):
