@@ -56,7 +56,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /* Generic Document Settings */
 
 body {
-    max-width: 90rem;
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -65,11 +64,14 @@ body {
     color: var(--color-text);
 }
 
+
+
 /* Tables */
 
 table {
     border-collapse: collapse;
     word-break: break-word;
+    margin: 0 auto;
 }
 
 table, th, td {
@@ -83,6 +85,12 @@ th {
     box-shadow: 0 2px 2px -1px var(--color-shadow);
 }
 
+h3, h4, h5 {
+    max-width: 90rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 /* Header */
 
 .header {
@@ -93,7 +101,7 @@ th {
 .map {
     margin: auto;
     height: 40rem;
-    max-width: 80rem;
+    max-width: 97%;
 }
 
 /* Color modifiers */
