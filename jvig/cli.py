@@ -128,7 +128,7 @@ class Application:
         if route_id:
             data = filter(lambda row: row["route_id"] == route_id, self.gtfs.trips.values())
         elif block_id:
-            data = filter(lambda row: row["block_id"] == route_id, self.gtfs.trips.values())
+            data = filter(lambda row: row["block_id"] == block_id, self.gtfs.trips.values())
         else:
             raise RuntimeError("Trips view must be filtered by either a block_id or route_id")
 
