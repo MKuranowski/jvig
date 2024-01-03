@@ -59,11 +59,11 @@ class Application:
         # Helper functions
         self.flask.add_template_global(to_js_literal, "to_js_literal")
         self.flask.add_template_global(
-            lambda trip_id: self.gtfs.stop_times[trip_id][0]["departure_time"],
+            lambda trip_id: self.gtfs.stop_times[trip_id][0]["departure_time"],  # type: ignore
             "trip_first_time",
         )
         self.flask.add_template_global(
-            lambda trip_id: self.gtfs.stop_times[trip_id][-1]["departure_time"],
+            lambda trip_id: self.gtfs.stop_times[trip_id][-1]["departure_time"],  # type: ignore
             "trip_last_time",
         )
 
