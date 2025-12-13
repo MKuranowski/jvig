@@ -229,6 +229,8 @@ class Gtfs:
     def from_user_input(cls, where: Path) -> "Gtfs":
         """Loads data from a .zip file (if `where` is a file),
         or from a directory with .txt files (if `where` is not a file)"""
+        if not where.exists():
+            raise FileNotFoundError(str(where))
         return cls.from_zip(where) if where.is_file() else cls.from_directory(where)
 
     def all_stops_in_group(self, stop_id: str) -> list[Row]:
