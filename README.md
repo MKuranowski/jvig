@@ -11,7 +11,7 @@ jvig is still work-in-progress, but **it works**.
 Installation
 ------------
 
-Install Python (at least 3.9) and pip. Consult your OS repositories for the package names,
+Install Python (at least 3.10) and pip. Consult your OS repositories for the package names,
 but these are usually `python3` and `python3-pip`. If you use a system without a package manager,
 I'd strongly recommend using one, like brew (for MacOS) or Chocolatey (for Windows).
 
