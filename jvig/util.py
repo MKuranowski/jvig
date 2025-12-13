@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import urllib.parse
 from datetime import date
 from typing import Any, Hashable, Iterable, TypeVar
 
@@ -76,3 +77,8 @@ def unique_list(it: Iterable[THashable]) -> list[THashable]:
             lst.append(i)
 
     return lst
+
+
+def quote_id(id: str) -> str:
+    """Quotes an arbitrary ID to be safe to include as a URL path element."""
+    return urllib.parse.quote(id, safe="")

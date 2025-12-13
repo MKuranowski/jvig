@@ -14,11 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from urllib.parse import quote_plus
-
 from markupsafe import escape
 
 from .. import valid
+from ..util import quote_id
 
 VALID_FIELDS: set[str] = {
     "trip_id",
@@ -37,7 +36,7 @@ def format_cell(row: dict[str, str], field: str) -> str:
     value = row[field]
 
     if field == "trip_id":
-        return f'<td><a href="/trip/{quote_plus(value)}">{escape(value)}</a></td>'
+        return f'<td><a href="/trip/{quote_id(value)}">{escape(value)}</a></td>'
 
     elif field in {"start_time", "end_time"}:
         if valid.time(value):

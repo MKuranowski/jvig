@@ -74,3 +74,10 @@ def test_parse_gtfs_date():
 
 def test_unique_list():
     assert util.unique_list([1, 2, 2, 3, 3, 1, 4, 5, 5, 4]) == [1, 2, 3, 4, 5]
+
+
+def test_quote_id():
+    assert util.quote_id("foo") == "foo"
+    assert util.quote_id("foo/bar") == "foo%2Fbar"
+    assert util.quote_id("foo+bar") == "foo%2Bbar"
+    assert util.quote_id("foo bar") == "foo%20bar"
