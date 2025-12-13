@@ -230,9 +230,7 @@ class Application:
             missing=(not self.gtfs.calendar) and (not self.gtfs.calendar_dates),
             header=self.gtfs.header_of("calendar"),
             data=self.gtfs.calendar.values(),
-            implicit_calendars=[
-                i for i in self.gtfs.calendar_dates if i not in self.gtfs.calendar
-            ],
+            implicit_calendars=[i for i in self.gtfs.calendar_dates if i not in self.gtfs.calendar],
         )
 
     def route_calendar(self, service_id: str) -> str:
