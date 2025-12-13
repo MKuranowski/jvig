@@ -1,5 +1,5 @@
 # jvig - GTFS Viewer, created using Flask.
-# Copyright © 2022-2023 Mikołaj Kuranowski
+# Copyright © 2022-2025 Mikołaj Kuranowski
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -65,17 +65,17 @@ class Gtfs:
     """Gtfs is a class that holds all known GTFS tables.
     It's also responsible for loading the data."""
 
-    agency: TableToOne = field(default_factory=dict)
-    stops: TableToOne = field(default_factory=dict)
-    stop_children: dict[str, list[str]] = field(default_factory=dict)
-    routes: TableToOne = field(default_factory=dict)
-    trips: TableToOne = field(default_factory=dict)
-    calendar: TableToOne = field(default_factory=dict)
-    calendar_dates: TableToMany = field(default_factory=dict)
-    frequencies: TableToMany = field(default_factory=dict)
-    stop_times: TableToMany = field(default_factory=dict)
-    stop_times_by_stops: TableToMany = field(default_factory=dict)
-    shapes: TableToPoints = field(default_factory=dict)
+    agency: TableToOne = field(default_factory=TableToOne)
+    stops: TableToOne = field(default_factory=TableToOne)
+    stop_children: dict[str, list[str]] = field(default_factory=dict[str, list[str]])
+    routes: TableToOne = field(default_factory=TableToOne)
+    trips: TableToOne = field(default_factory=TableToOne)
+    calendar: TableToOne = field(default_factory=TableToOne)
+    calendar_dates: TableToMany = field(default_factory=TableToMany)
+    frequencies: TableToMany = field(default_factory=TableToMany)
+    stop_times: TableToMany = field(default_factory=TableToMany)
+    stop_times_by_stops: TableToMany = field(default_factory=TableToMany)
+    shapes: TableToPoints = field(default_factory=TableToPoints)
 
     def load_to_row(self, table_name: str, stream: IO[str]) -> None:
         """Loads a table where the key should map into a single row,
@@ -208,7 +208,7 @@ class Gtfs:
         with zipfile.ZipFile(where, mode="r") as archive:
             for f in archive.infolist():
                 if not f.filename.endswith(".txt"):
-                    logger.warn(f"Unrecognized file in zip: {f.filename}")
+                    logger.warning(f"Unrecognized file in zip: {f.filename}")
                     continue
 
                 table_name = f.filename[:-4]
